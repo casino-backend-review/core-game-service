@@ -1,9 +1,8 @@
 package com.core.gameservice.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -16,4 +15,30 @@ public class UpdateAgentGameRequest {
     // Fields representing the details that can be updated
     private String newGameStatus; // Example field
     private Double newRate; // Another example field, if rate updates are relevant
+    @Getter
+    private String username;
+    @Getter
+    private String getProducts;
+    private Object getUserType;
+    private String getUpline;
+
+    private String userType;
+    private String upline;
+    private List<Product> products; // Ensure this matches with your getter method
+    private List<String> downline;
+
+
+    public Object getUserType() {
+        return this.getUserType;
+    }
+
+    public String getUpline() {
+        return this.getUpline;
+    }
+
+    public String getProducts() {
+        return this.getProducts;
+    }
 }
+
+

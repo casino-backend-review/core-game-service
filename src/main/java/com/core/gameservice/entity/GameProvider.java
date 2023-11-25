@@ -59,5 +59,9 @@ public class GameProvider {
 
     @Column(name = "is_allow_config")
     private boolean isAllowConfig;
+    private double getRateLimit;
 
+    public double getRateLimit() {
+        return this.getRateLimit;
+    }
 }

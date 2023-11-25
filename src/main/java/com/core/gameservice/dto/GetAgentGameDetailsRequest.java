@@ -13,4 +13,12 @@ public class GetAgentGameDetailsRequest {
 
     private String agentId; // Assuming an agent ID is needed to identify the game details
     private String gameId; // Assuming a game ID is also required
+
+    public String getUsername() {
+        return this.agentId;
+    }
+
+    public String getProductId() {
+        return this.gameId;
+    }
 }

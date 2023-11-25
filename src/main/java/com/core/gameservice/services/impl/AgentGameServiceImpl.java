@@ -1,9 +1,9 @@
 package com.core.gameservice.services.impl;
 
-import com.core.gameservice.dto.AgentGameResponse;
-import com.core.gameservice.dto.CreateAgentGameRequest;
-import com.core.gameservice.dto.GetAgentGameDetailsRequest;
-import com.core.gameservice.dto.UpdateAgentGameRequest;
+import com.core.gameservice.dto.*;
+import com.core.gameservice.entity.AgentGame;
+import com.core.gameservice.entity.GameDetail;
+import com.core.gameservice.entity.GameProvider;
 import com.core.gameservice.exceptions.CustomException;
 import com.core.gameservice.repositories.AgentGameRepository;
 import com.core.gameservice.repositories.GameProviderRepository;
@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AgentGameServiceImpl implements AgentGameService {
@@ -20,40 +22,151 @@ public class AgentGameServiceImpl implements AgentGameService {
     private final GameProviderRepository gameProviderRepository;
 
     @Autowired
-    public AgentGameServiceImpl(AgentGameRepository agentGameRepository, GameProviderRepository gameProviderRepository) {
+    public AgentGameServiceImpl(AgentGameRepository agentGameRepository,
+                                GameProviderRepository gameProviderRepository) {
         this.agentGameRepository = agentGameRepository;
         this.gameProviderRepository = gameProviderRepository;
     }
 
     @Override
     public List<AgentGameResponse> createAgentGame(CreateAgentGameRequest request) throws CustomException {
-        // Implement the logic here, similar to the Go method.
-        // Throw CustomException with appropriate messages in case of errors.
-        return null; // Return the result or throw CustomException
+        long gameUplineCount = agentGameRepository.countByUplineUsername(request.getUpline());
+        if (gameUplineCount == 0) {
+            throw new CustomException("Upline not found");
+        }
+
+        for (Product game : request.getProducts()) {
+            if (game.isChecked()) {
+                Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
+                if (!gameDetailOptional.isPresent()) {
+                    throw new CustomException("Product not found");
+                }
+                GameProvider gameDetail = gameDetailOptional.get();
+
+                if (!request.getUserType().equals("company") && !request.getUserType().equals("admin")) {
+                    validateUplineRate(request.getUpline(), game.getProductId(), game.getRate());
+                }
+
+                AgentGame newAgentGame = new AgentGame();
+                newAgentGame.setUsername(request.getUsername());
+                newAgentGame.setUpline(request.getUpline());
+                newAgentGame.setUserType(request.getUserType());
+                newAgentGame.setProductId(game.getProductId());
+                newAgentGame.setRate(game.getRate());
+                newAgentGame.setRateLimit(gameDetail.getRateLimit());
+                newAgentGame.setProvider(gameDetail.getProvider());
+
+                agentGameRepository.save(newAgentGame);
+            }
+        }
+
+        List<AgentGame> agentGames = agentGameRepository.findByUsername(request.getUsername());
+        return agentGames.stream()
+                .map(agentGame -> convertToAgentGameResponse(agentGame))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<AgentGameResponse> updateAgentGame(UpdateAgentGameRequest request) throws CustomException {
-        // Implement the logic here, similar to the Go method.
-        return null; // Return the result or throw CustomException
+        List<AgentGame> userGames = agentGameRepository.findByUsername(request.getUsername());
+        if (userGames.isEmpty()) {
+            throw new CustomException("User not found");
+        }
+
+        for (Product game : request.getProducts())
+            if (game.isChecked()) {
+                Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
+                if (!gameDetailOptional.isPresent()) {
+                    throw new CustomException("Product not found");
+                }
+                GameProvider gameDetail = gameDetailOptional.get();
+
+                if (!request.getUserType().equals("company") && !request.getUserType().equals("admin")) {
+                    validateUplineRate(request.getUpline(), game.getProductId(), game.getRate());
+                }
+
+                AgentGame agentGame = agentGameRepository.findByUsernameAndProductId(request.getUsername(), game.getProductId())
+                        .orElseThrow(() -> new CustomException("Agent game with the product not found"));
+
+                agentGame.setStatus(game.getNewGameStatus());
+                agentGame.setRate(game.getNewRate());
+                agentGame.setRateLimit(gameDetail.getRateLimit());
+                agentGameRepository.save(agentGame);
+            }
+
+        List<AgentGame> updatedGames = agentGameRepository.findByUsername(request.getUsername());
+        return updatedGames.stream()
+                .map(agentGame -> convertToAgentGameResponse(agentGame))
+                .collect(Collectors.toList());
     }
 
     @Override
     public AgentGameResponse getAgentGameDetails(GetAgentGameDetailsRequest request) throws CustomException {
-        // Implement the logic here, similar to the Go method.
-        return null; // Return the result or throw CustomException
+        List<AgentGame> agentGames = agentGameRepository
+                .findAllByUsernameAndStatusAndProductId(request.getUsername(), "A", request.getProductId());
+
+        if (agentGames.isEmpty()) {
+            throw new CustomException("No agent games found for the given criteria");
+        }
+
+        return agentGames.stream()
+                .map(agentGame -> {
+                    Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(agentGame.getProductId());
+                    if (!gameDetailOptional.isPresent()) {
+                        try {
+                            throw new CustomException("Game details not found for product ID: " + agentGame.getProductId());
+                        } catch (CustomException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    return convertToAgentGameResponse(agentGame);
+                })
+                .findFirst()
+                .orElseThrow(() -> new CustomException("No matching agent games found"));
     }
+
+    private AgentGameResponse convertToAgentGameResponse(AgentGame agentGame) {
+
+        return new AgentGameResponse();
+    }
+
 
     @Override
     public List<AgentGameResponse> getAgentGame(String username) throws CustomException {
-        // Implement the logic here, similar to the Go method.
-        return null; // Return the result or throw CustomException
+        List<AgentGame> agentGames = agentGameRepository.findByUsername(username);
+        if (agentGames.isEmpty()) {
+            throw new CustomException("Agent games not found");
+        }
+        return agentGames.stream()
+                .map(this::convertToAgentGameResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void deleteAgentGame(String username) throws CustomException {
-        // Implement the logic here, similar to the Go method.
+        try {
+            agentGameRepository.deleteByUsername(username);
+        } catch (Exception e) {
+            throw new CustomException("Error occurred while deleting agent games: " + e.getMessage());
+        }
     }
 
-    // Implement additional methods as needed.
+    private void validateUplineRate(String upline, String productId, double rate) throws CustomException {
+        Optional<AgentGame> uplineGameOpt = agentGameRepository.findByUsernameAndProductId(upline, productId);
+        if (!uplineGameOpt.isPresent()) {
+            throw new CustomException("Error getting game upline or product upline not allowed");
+        }
+        AgentGame uplineGame = uplineGameOpt.get();
+
+        Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(productId);
+        if (!gameDetailOptional.isPresent()) {
+            throw new CustomException("Error getting game details");
+        }
+        GameProvider gameDetail = gameDetailOptional.get();
+
+        if (rate > uplineGame.getRate() || rate > gameDetail.getRate()) {
+            throw new CustomException("Product error rate limit exceeded");
+        }
+    }
+
 }
