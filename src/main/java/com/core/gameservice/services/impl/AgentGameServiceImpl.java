@@ -103,7 +103,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     @Override
     public AgentGameResponse getAgentGameDetails(GetAgentGameDetailsRequest request) throws CustomException {
         List<AgentGame> agentGames = agentGameRepository
-                .findAllByUsernameAndStatusAndProductId(request.getUsername(), Status.A, request.getProductId());
+                .findAllByUsernameAndStatusAndProductId(request.getAgentId(), Status.A, request.getGameId());
 
         if (agentGames.isEmpty()) {
             throw new CustomException("No agent games found for the given criteria");

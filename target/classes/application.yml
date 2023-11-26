@@ -16,7 +16,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
-
 services:
   pgService:
     url: https://clients.pglaz.com
