@@ -27,7 +27,7 @@ public class GameProvider {
     private String callbackUrl;
 
     @Column(nullable = false, length = 100)
-    private String productID;
+    private String productId;
 
     @Column(nullable = false, length = 100)
     private String productName;

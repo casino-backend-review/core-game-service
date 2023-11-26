@@ -2,8 +2,8 @@ package com.core.gameservice.services.impl;
 
 import com.core.gameservice.dto.*;
 import com.core.gameservice.entity.AgentGame;
-import com.core.gameservice.entity.GameDetail;
 import com.core.gameservice.entity.GameProvider;
+import com.core.gameservice.enums.Status;
 import com.core.gameservice.exceptions.CustomException;
 import com.core.gameservice.repositories.AgentGameRepository;
 import com.core.gameservice.repositories.GameProviderRepository;
@@ -30,7 +30,7 @@ public class AgentGameServiceImpl implements AgentGameService {
 
     @Override
     public List<AgentGameResponse> createAgentGame(CreateAgentGameRequest request) throws CustomException {
-        long gameUplineCount = agentGameRepository.countByUplineUsername(request.getUpline());
+        long gameUplineCount = agentGameRepository.countByUsername(request.getUpline());
         if (gameUplineCount == 0) {
             throw new CustomException("Upline not found");
         }
@@ -73,7 +73,7 @@ public class AgentGameServiceImpl implements AgentGameService {
             throw new CustomException("User not found");
         }
 
-        for (Product game : request.getProducts())
+        for (Product game : request.getProduct())
             if (game.isChecked()) {
                 Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
                 if (!gameDetailOptional.isPresent()) {
@@ -103,7 +103,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     @Override
     public AgentGameResponse getAgentGameDetails(GetAgentGameDetailsRequest request) throws CustomException {
         List<AgentGame> agentGames = agentGameRepository
-                .findAllByUsernameAndStatusAndProductId(request.getUsername(), "A", request.getProductId());
+                .findAllByUsernameAndStatusAndProductId(request.getUsername(), Status.A, request.getProductId());
 
         if (agentGames.isEmpty()) {
             throw new CustomException("No agent games found for the given criteria");

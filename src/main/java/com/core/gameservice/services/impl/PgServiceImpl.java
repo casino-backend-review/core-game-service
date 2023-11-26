@@ -5,6 +5,7 @@ import com.core.gameservice.client.WalletClient;
 import com.core.gameservice.dto.*;
 import com.core.gameservice.entity.AgentGame;
 import com.core.gameservice.entity.GameProvider;
+import com.core.gameservice.enums.Status;
 import com.core.gameservice.exceptions.BadRequestException;
 import com.core.gameservice.exceptions.InternalErrorException;
 import com.core.gameservice.repositories.AgentGameRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PgServiceImpl implements PgService {
@@ -64,12 +66,12 @@ try{
     }
 
     public boolean verifyAgentGame(String productId, String upline, String provider) {
-        List<AgentGame> agentGames = agentGameRepository.findAllByUsernameAndStatusAndProductId(upline, "A", productId);
+        List<AgentGame> agentGames = agentGameRepository.findAllByUsernameAndStatusAndProductId(upline, Status.A, productId);
 
         // If we can't find games corresponding with the agent, then we find the game provider
         if (agentGames.isEmpty()) {
-            GameProvider gameProvider = gameProviderRepository.findByProductID(productId);
-            return gameProvider != null;
+            Optional<GameProvider> gameProvider = gameProviderRepository.findByProductId(productId);
+            return gameProvider.isPresent();
         }
 
         // Otherwise, we find if the agent games we found are equal to the provider; if it is, then the user can login

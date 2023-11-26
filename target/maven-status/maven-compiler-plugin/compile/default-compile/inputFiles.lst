@@ -4,7 +4,6 @@ C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\services\PgService.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\client\impl\WalletClientImpl.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\dto\PgGameResponse.java
-C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\services\WalletServiceClient.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\dto\GameListResponse.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\dto\PgLoginResponse.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\exceptions\CustomException.java
@@ -14,6 +13,7 @@ C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\dto\WalletResponse.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\enums\Status.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\repositories\AgentGameRepository.java
+C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\config\OpenApiConfig.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\GameServiceApplication.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\dto\PartnerLoginResponse.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\dto\CreateAgentGameRequest.java
@@ -22,8 +22,10 @@ C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\exceptions\BadRequestException.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\services\impl\AgentGameServiceImpl.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\dto\UpdateAgentGameRequest.java
+C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\services\impl\PgServiceImpl.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\repositories\GameProviderRepository.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\client\impl\PgClientImpl.java
+C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\entity\GameDetail.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\services\AgentGameService.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\entity\GameProvider.java
 C:\Users\Rajeshree Kopulwar\Documents\GitHub\core-game-service\src\main\java\com\core\gameservice\exceptions\AppError.java
