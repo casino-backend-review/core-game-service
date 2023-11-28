@@ -33,7 +33,7 @@ public class AgentGame {
     private double rate;
 
     @Column(nullable = false)
-    private double rateLimit;
+    private Double rateLimit;
 
     @Column(nullable = false, length = 100)
     private String productId;

@@ -17,12 +17,5 @@ public class Product {
     private String productId;
     private String productName;
     private Status newGameStatus;
-    private Status getNewRate;// Assuming you have a Status field
-
-    public double getNewRate() {
-        return this.getNewRate.ordinal();
-    }
-
-    // Lombok will generate a getter for newGameStatus, so you don't need to manually define it
-    // unless you need to add some custom logic.
+    private double newRate;// Assuming you have a Status field
 }

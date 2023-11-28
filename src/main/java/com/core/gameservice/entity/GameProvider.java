@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "game_providers")
-
 public class GameProvider {
 
     @Id
@@ -57,11 +56,14 @@ public class GameProvider {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Column(name = "is_allow_config")
     private boolean isAllowConfig;
-    private double getRateLimit;
+    private Double rateLimit;
 
-    public double getRateLimit() {
-        return this.getRateLimit;
-    }
 }

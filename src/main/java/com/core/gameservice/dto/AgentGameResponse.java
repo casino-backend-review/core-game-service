@@ -1,5 +1,6 @@
 package com.core.gameservice.dto;
 
+import com.core.gameservice.enums.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,6 @@ public class AgentGameResponse {
     private Double rateLimit;
     private String productId;
     private String provider;
-    private String status;
+    private Status status;
     private String note;
 }

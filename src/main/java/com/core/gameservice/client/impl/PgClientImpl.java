@@ -24,7 +24,7 @@ public class PgClientImpl implements PgClient {
     @Override
     public PartnerLoginResponse pgLogin(PgLoginRequest pgLoginRequest) {
         return webClient.post()
-                .uri("https://clients.pglaz.com/PartnerAPI/v1/seamless/logIn")
+                .uri(baseUrl+"/pg/login")
                 .bodyValue(pgLoginRequest)
                 .retrieve()
                 .bodyToMono(PartnerLoginResponse.class)

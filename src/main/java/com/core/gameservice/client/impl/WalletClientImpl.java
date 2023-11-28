@@ -28,7 +28,7 @@ public class WalletClientImpl implements WalletClient {
     public WalletResponse getWallet(GetWalletRequest getWalletRequest) {
 
         return webClient.get()
-                .uri("api/wallet/get/wallet/{username}", getWalletRequest.getUsername())
+                .uri(baseUrl+"/wallet/get/wallet/{username}", getWalletRequest.getUsername())
                 .retrieve()
                 .bodyToFlux(WalletResponse.class)
                 .last()

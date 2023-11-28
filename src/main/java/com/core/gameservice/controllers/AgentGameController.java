@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/agent/games")
+@RequestMapping("/agent/game")
 public class AgentGameController {
 
     private final AgentGameService agentGameService;

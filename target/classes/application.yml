@@ -18,7 +18,7 @@ spring:
 
 services:
   pgService:
-    url: https://clients.pglaz.com
+    url:  http://localhost:8089/partner-service
   walletService:
     url: http://localhost:8082/wallet-service
 

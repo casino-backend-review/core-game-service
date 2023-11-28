@@ -11,7 +11,10 @@ import com.core.gameservice.services.AgentGameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,14 +34,14 @@ public class AgentGameServiceImpl implements AgentGameService {
     @Override
     public List<AgentGameResponse> createAgentGame(CreateAgentGameRequest request) throws CustomException {
         long gameUplineCount = agentGameRepository.countByUsername(request.getUpline());
-        if (gameUplineCount == 0) {
+        if (!request.getUserType().equals("company") &&gameUplineCount == 0) {
             throw new CustomException("Upline not found");
         }
 
         for (Product game : request.getProducts()) {
             if (game.isChecked()) {
                 Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
-                if (!gameDetailOptional.isPresent()) {
+                if (gameDetailOptional.isEmpty()) {
                     throw new CustomException("Product not found");
                 }
                 GameProvider gameDetail = gameDetailOptional.get();
@@ -53,8 +56,11 @@ public class AgentGameServiceImpl implements AgentGameService {
                 newAgentGame.setUserType(request.getUserType());
                 newAgentGame.setProductId(game.getProductId());
                 newAgentGame.setRate(game.getRate());
-                newAgentGame.setRateLimit(gameDetail.getRateLimit());
+                newAgentGame.setRateLimit(gameDetail.getRate());
                 newAgentGame.setProvider(gameDetail.getProvider());
+                newAgentGame.setStatus(Status.A);
+                newAgentGame.setCreatedAt(LocalDateTime.now());
+
 
                 agentGameRepository.save(newAgentGame);
             }
@@ -62,7 +68,7 @@ public class AgentGameServiceImpl implements AgentGameService {
 
         List<AgentGame> agentGames = agentGameRepository.findByUsername(request.getUsername());
         return agentGames.stream()
-                .map(agentGame -> convertToAgentGameResponse(agentGame))
+                .map(this::convertToAgentGameResponse)
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +82,7 @@ public class AgentGameServiceImpl implements AgentGameService {
         for (Product game : request.getProduct())
             if (game.isChecked()) {
                 Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
-                if (!gameDetailOptional.isPresent()) {
+                if (gameDetailOptional.isEmpty()) {
                     throw new CustomException("Product not found");
                 }
                 GameProvider gameDetail = gameDetailOptional.get();
@@ -127,7 +133,10 @@ public class AgentGameServiceImpl implements AgentGameService {
 
     private AgentGameResponse convertToAgentGameResponse(AgentGame agentGame) {
 
-        return new AgentGameResponse();
+        return AgentGameResponse.builder().id(agentGame.getId()).username(agentGame.getUsername()).
+                userType(agentGame.getUserType()).upline(agentGame.getUpline())
+                .productId(agentGame.getProductId()).provider(agentGame.getProvider()).rate(agentGame.getRate()).
+                rateLimit(agentGame.getRateLimit()).note(agentGame.getNote()).status(agentGame.getStatus()).build();
     }
 
 

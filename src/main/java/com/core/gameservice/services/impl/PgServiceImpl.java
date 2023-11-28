@@ -43,16 +43,15 @@ public class PgServiceImpl implements PgService {
 try{
         GetWalletRequest walletRequest = new GetWalletRequest();
         walletRequest.setUsername(pgLoginRequest.getUsername());
-    pgClient.pgLogin(pgLoginRequest);
     WalletResponse user = walletClient.getWallet(walletRequest);
 
         if (user == null) {
             throw new RuntimeException("Failed to get user from wallet");
         }
-        boolean isActive = verifyAgentGame(this.productId, user.getUpline(), this.provider);
+      /*  boolean isActive = verifyAgentGame(this.productId, user.getUpline(), this.provider);
         if (!isActive) {
             throw new BadRequestException("Games inactive");
-        }
+        }*/
     return pgClient.pgLogin(pgLoginRequest);
 
     } catch(Exception e)
