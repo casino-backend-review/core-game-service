@@ -94,15 +94,17 @@ public class AgentGameServiceImpl implements AgentGameService {
                 AgentGame agentGame = agentGameRepository.findByUsernameAndProductId(request.getUsername(), game.getProductId())
                         .orElseThrow(() -> new CustomException("Agent game with the product not found"));
 
-                agentGame.setStatus(game.getNewGameStatus());
-                agentGame.setRate(game.getNewRate());
-                agentGame.setRateLimit(gameDetail.getRateLimit());
+                if(game.getNewGameStatus()!=null) {
+                    agentGame.setStatus(game.getNewGameStatus());
+                }
+                agentGame.setRate(game.getRate());
+                agentGame.setRateLimit(game.getRateLimit());
                 agentGameRepository.save(agentGame);
             }
 
         List<AgentGame> updatedGames = agentGameRepository.findByUsername(request.getUsername());
         return updatedGames.stream()
-                .map(agentGame -> convertToAgentGameResponse(agentGame))
+                .map(this::convertToAgentGameResponse)
                 .collect(Collectors.toList());
     }
 

@@ -65,5 +65,4 @@ public class GameProvider {
     @Column(name = "is_allow_config")
     private boolean isAllowConfig;
     private Double rateLimit;
-
 }

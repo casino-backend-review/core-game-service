@@ -31,7 +31,7 @@ public class AgentGameController {
         }
     }
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     public ResponseEntity<List<AgentGameResponse>> updateAgentGame(@RequestBody UpdateAgentGameRequest request) {
         try {
             List<AgentGameResponse> response = agentGameService.updateAgentGame(request);

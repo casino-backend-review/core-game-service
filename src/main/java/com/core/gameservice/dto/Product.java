@@ -17,5 +17,4 @@ public class Product {
     private String productId;
     private String productName;
     private Status newGameStatus;
-    private double newRate;// Assuming you have a Status field
 }
