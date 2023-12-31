@@ -10,12 +10,10 @@ import com.core.gameservice.repositories.GameProviderRepository;
 import com.core.gameservice.services.AgentGameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -56,7 +54,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                 newAgentGame.setUserType(request.getUserType());
                 newAgentGame.setProductId(game.getProductId());
                 newAgentGame.setRate(game.getRate());
-                newAgentGame.setRateLimit(gameDetail.getRate());
+                newAgentGame.setRateLimit(game.getRateLimit());
                 newAgentGame.setProvider(gameDetail.getProvider());
                 newAgentGame.setStatus(Status.A);
                 newAgentGame.setCreatedAt(LocalDateTime.now());
@@ -79,33 +77,43 @@ public class AgentGameServiceImpl implements AgentGameService {
             throw new CustomException("User not found");
         }
 
-        for (Product game : request.getProduct())
-            if (game.isChecked()) {
-                Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
-                if (gameDetailOptional.isEmpty()) {
-                    throw new CustomException("Product not found");
-                }
-                GameProvider gameDetail = gameDetailOptional.get();
+        for (Product game : request.getProduct()){
+            processProduct(request.getUsername(),request.getUserType(),request.getUpline(), game);
 
-                if (!request.getUserType().equals("company") && !request.getUserType().equals("admin")) {
-                    validateUplineRate(request.getUpline(), game.getProductId(), game.getRate());
-                }
-
-                AgentGame agentGame = agentGameRepository.findByUsernameAndProductId(request.getUsername(), game.getProductId())
-                        .orElseThrow(() -> new CustomException("Agent game with the product not found"));
-
-                if(game.getNewGameStatus()!=null) {
-                    agentGame.setStatus(game.getNewGameStatus());
-                }
-                agentGame.setRate(game.getRate());
-                agentGame.setRateLimit(game.getRateLimit());
-                agentGameRepository.save(agentGame);
-            }
+        }
 
         List<AgentGame> updatedGames = agentGameRepository.findByUsername(request.getUsername());
         return updatedGames.stream()
                 .map(this::convertToAgentGameResponse)
                 .collect(Collectors.toList());
+    }
+
+    private void processProduct(String username,String userType,String upline, Product game) throws CustomException {
+        if (game.isChecked()) {
+            Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
+            if (gameDetailOptional.isEmpty()) {
+                throw new CustomException("Product not found");
+            }
+            GameProvider gameDetail = gameDetailOptional.get();
+
+            if (!userType.equals("company") && !userType.equals("admin")) {
+                if(upline!=null&& game.getProductId()!=null&& game.getRate()!=null) {
+                    validateUplineRate(upline, game.getProductId(), game.getRate());
+                }
+            }
+
+            AgentGame agentGame = agentGameRepository.findByUsernameAndProductId(username, game.getProductId())
+                    .orElseThrow(() -> new CustomException("Agent game with the product not found"));
+
+            if(game.getNewGameStatus()!=null) {
+                agentGame.setStatus(game.getNewGameStatus());
+            }
+            if(game.getRate()!=null){
+            agentGame.setRate(game.getRate());}
+            if(game.getRateLimit()!=null){
+            agentGame.setRateLimit(game.getRateLimit());}
+            agentGameRepository.save(agentGame);
+        }
     }
 
     @Override
@@ -120,7 +128,7 @@ public class AgentGameServiceImpl implements AgentGameService {
         return agentGames.stream()
                 .map(agentGame -> {
                     Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(agentGame.getProductId());
-                    if (!gameDetailOptional.isPresent()) {
+                    if (gameDetailOptional.isEmpty()) {
                         try {
                             throw new CustomException("Game details not found for product ID: " + agentGame.getProductId());
                         } catch (CustomException e) {
@@ -160,6 +168,37 @@ public class AgentGameServiceImpl implements AgentGameService {
         } catch (Exception e) {
             throw new CustomException("Error occurred while deleting agent games: " + e.getMessage());
         }
+    }
+
+    @Override
+    public List<AgentGameResponse> getAgentGameByUpline(String uplineUsername) throws CustomException {
+        List<AgentGame> agentGames = agentGameRepository.findByUpline(uplineUsername);
+        if (agentGames.isEmpty()) {
+            throw new CustomException("Agent games not found");
+        }
+        return agentGames.stream()
+                .map(this::convertToAgentGameResponse)
+                .collect(Collectors.toList());    }
+
+    @Override
+    public List<AgentGameResponse> updateAgentGameList(List<UpdateAgentGameByProductRequest> request) throws CustomException {
+
+        List<AgentGameResponse> agentGameResponses=new ArrayList<>();
+        if(!CollectionUtils.isEmpty(request)){
+
+            for(UpdateAgentGameByProductRequest updateAgentGameByProductRequest:request){
+                List<AgentGame> userGames = agentGameRepository.findByUsername(updateAgentGameByProductRequest.getUsername());
+
+                if (userGames.isEmpty()) {
+                    throw new CustomException("User not found");
+                }
+                processProduct(updateAgentGameByProductRequest.getUsername(),updateAgentGameByProductRequest.getUserType(),updateAgentGameByProductRequest.getUpline(), updateAgentGameByProductRequest.getProduct());
+
+                Optional<AgentGame> updatedGames = agentGameRepository.findByUsernameAndProductId(updateAgentGameByProductRequest.getUsername(),updateAgentGameByProductRequest.getProduct().getProductId());
+                updatedGames.ifPresent(agentGame -> agentGameResponses.add(convertToAgentGameResponse(agentGame)));
+            }
+        }
+        return agentGameResponses;
     }
 
     private void validateUplineRate(String upline, String productId, double rate) throws CustomException {

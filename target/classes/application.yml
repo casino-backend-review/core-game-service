@@ -1,5 +1,5 @@
 server:
-  port: 8083
+  port: 8071
   servlet:
     context-path: /game-service
 spring:

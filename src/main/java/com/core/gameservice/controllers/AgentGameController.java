@@ -31,6 +31,7 @@ public class AgentGameController {
         }
     }
 
+
     @PutMapping("/update")
     public ResponseEntity<List<AgentGameResponse>> updateAgentGame(@RequestBody UpdateAgentGameRequest request) {
         try {
@@ -40,6 +41,17 @@ public class AgentGameController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @PutMapping("/update/byProduct")
+    public ResponseEntity<List<AgentGameResponse>> updateAgentGameListByProduct(@RequestBody List<UpdateAgentGameByProductRequest> request) {
+        try {
+            List<AgentGameResponse> response = agentGameService.updateAgentGameList(request);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (CustomException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
 
     @GetMapping("/details")
     public ResponseEntity<AgentGameResponse> getAgentGameDetails(@RequestParam String username, @RequestParam String productId) {
@@ -58,6 +70,16 @@ public class AgentGameController {
     public ResponseEntity<List<AgentGameResponse>> getAgentGames(@RequestParam String username) {
         try {
             List<AgentGameResponse> response = agentGameService.getAgentGame(username);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (CustomException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/all/byUpline")
+    public ResponseEntity<List<AgentGameResponse>> getAgentGamesByUpline(@RequestParam String uplineUsername) {
+        try {
+            List<AgentGameResponse> response = agentGameService.getAgentGameByUpline(uplineUsername);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (CustomException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

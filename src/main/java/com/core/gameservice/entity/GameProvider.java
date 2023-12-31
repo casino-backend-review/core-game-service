@@ -40,7 +40,8 @@ public class GameProvider {
     @Column(nullable = false)
     private double rate;
 
-    @Column(name = "company_fix", nullable = false, length = 100)
+    //@Column(name = "company_fix", nullable = false, length = 100)
+    @Column(name = "company_fix" , length = 100)
     private String companyFix;
 
     @Enumerated(EnumType.STRING)

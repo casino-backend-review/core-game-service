@@ -7,14 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class Product {
-    private boolean checked;
-    private Double rate;
-    private Double rateLimit;
-    private String productId;
+@AllArgsConstructor
+public class AgentGameCreateResponse extends AgentGameResponse {
+
+
     private String productName;
-    private Status newGameStatus;
+    private String category;
+    private String callbackUrl;
+
 }
