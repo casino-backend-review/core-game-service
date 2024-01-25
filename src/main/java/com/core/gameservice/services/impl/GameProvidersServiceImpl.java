@@ -20,10 +20,10 @@ public class GameProvidersServiceImpl implements GameProvidersService {
 
     GameProviderRepository gameProviderRepository;
     @Override
-    public List<String> getAllProviders() {
+    public List<GameProvider> getAllProviders() {
         List<GameProvider> byStatus = gameProviderRepository.findByStatus(Status.A);
         if(!CollectionUtils.isEmpty(byStatus)) {
-           return byStatus.stream().map(GameProvider::getProductName).toList();
+           return byStatus;
         }
         else{
             throw new ApiException("No game providers found");

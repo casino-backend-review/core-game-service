@@ -1,6 +1,8 @@
 package com.core.gameservice.controllers;
 
+import com.core.gameservice.dto.AgentGameResponse;
 import com.core.gameservice.entity.GameProvider;
+import com.core.gameservice.exception.ApiResponseMessage;
 import com.core.gameservice.services.GameProvidersService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,31 +19,27 @@ public class GameProvidersController {
 
    private GameProvidersService gameProvidersService;
 
-   @GetMapping("/all")
-    public ResponseEntity<List<String>> getAllProviders(){
+   @GetMapping("/get-all")
+    public ResponseEntity<ApiResponseMessage<List<GameProvider>>> getAllProviders(){
         try {
-            List<String> gameProviders =  gameProvidersService.getAllProviders();
+            List<GameProvider> gameProviders = gameProvidersService.getAllProviders();
 
-            return new ResponseEntity<>(gameProviders, HttpStatus.OK);
-        } catch (Exception exception) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+            return ResponseEntity.ok(ApiResponseMessage.<List<GameProvider>>builder().data(gameProviders).code(ApiResponseMessage.OK).type("ok").build());
+        }catch (Exception exception) {
+                ApiResponseMessage apiResponseMessage = new ApiResponseMessage(ApiResponseMessage.ERROR, exception.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponseMessage);
+            }
     }
 
     @PostMapping("/create")
-    public ResponseEntity<?> createGameProviders(@RequestBody GameProvider gameProvider){
+    public ResponseEntity<ApiResponseMessage<GameProvider>> createGameProviders(@RequestBody GameProvider gameProvider){
         try {
             GameProvider savedGameProvider=gameProvidersService.createGameProvider(gameProvider);
-
-            return new ResponseEntity<>(savedGameProvider, HttpStatus.OK);
-        } catch (Exception exception) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.ok(ApiResponseMessage.<GameProvider>builder().data(savedGameProvider).code(ApiResponseMessage.OK).type("ok").build());
+        }catch (Exception exception) {
+            ApiResponseMessage apiResponseMessage = new ApiResponseMessage(ApiResponseMessage.ERROR, exception.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponseMessage);
         }
     }
 
-  public ResponseEntity updateGameProviderStatus(Map<String,Boolean> gameStatusMap){
-     // gameProvidersService.updateGameProviderStatus(gameStatusMap)
-
-       return null;
-   }
 }

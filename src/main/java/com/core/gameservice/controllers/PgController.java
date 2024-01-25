@@ -15,15 +15,15 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/pg")
+//@RestController
+//@RequestMapping("/pg")
 @AllArgsConstructor
 @Slf4j
 public class PgController {
 
     private final PgService pgService;
 
-    @PostMapping("/login")
+   // @PostMapping("/login")
     public ResponseEntity<PartnerLoginResponse> login(@RequestBody PgLoginRequest pgLoginRequest) {
         try {
             PartnerLoginResponse response = pgService.login(pgLoginRequest);
@@ -36,7 +36,7 @@ public class PgController {
         }
     }
 
-    @GetMapping("/games")
+   // @GetMapping("/games")
     public ResponseEntity<GameListResponse> gameList() throws Exception {
         try {
             List<PgGameResponse> pgGameResponses = pgService.gameList();

@@ -20,7 +20,7 @@ services:
   pgService:
     url:  http://localhost:8089/partner-service
   walletService:
-    url: http://localhost:8082/wallet-service
+    url: http://localhost:8086/wallet-service
 
 
 partner:

@@ -1,4 +1,4 @@
-package com.core.gameservice.exceptions;
+package com.core.gameservice.exception;
 
 import org.springframework.http.HttpStatus;
 

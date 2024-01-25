@@ -6,22 +6,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AgentGameResponse {
+public class UpdateAgentGameMemberStatusRequest {
 
-    private Long id;
     private String username;
-    private String upline;
     private String userType;
-    private Double rate;
-    private Double rateLimit;
-    private String productId;
-    private String provider;
-    private Status status;
-    private String note;
-    private Status memberStatus;
-
+    private Map<String, Status> productMemberGameStatusMap;
 }

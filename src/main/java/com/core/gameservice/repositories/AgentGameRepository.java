@@ -28,7 +28,9 @@ public interface AgentGameRepository extends JpaRepository<AgentGame, Long> { //
 
     List<AgentGame> findByUsername(String username);
 
-    List<AgentGame> findByUpline(String uplineUsername);
+    List<AgentGame> findByUplineAndProductId(String uplineUsername,String productId);
+
+    List<AgentGame> findAllByUsernameAndUserType(String username, String userType);
 
     // Add other query methods as required
 }

@@ -10,18 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AgentGameResponse {
+public class ProductMemberGameStatus {
 
-    private Long id;
-    private String username;
-    private String upline;
-    private String userType;
-    private Double rate;
-    private Double rateLimit;
     private String productId;
-    private String provider;
-    private Status status;
-    private String note;
     private Status memberStatus;
 
 }

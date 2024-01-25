@@ -6,8 +6,6 @@ import com.core.gameservice.dto.*;
 import com.core.gameservice.entity.AgentGame;
 import com.core.gameservice.entity.GameProvider;
 import com.core.gameservice.enums.Status;
-import com.core.gameservice.exceptions.BadRequestException;
-import com.core.gameservice.exceptions.InternalErrorException;
 import com.core.gameservice.repositories.AgentGameRepository;
 import com.core.gameservice.repositories.GameProviderRepository;
 import com.core.gameservice.services.PgService;
@@ -18,8 +16,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.util.List;
 import java.util.Optional;
 
-@Service
-public class PgServiceImpl implements PgService {
+//@Service
+public class PgServiceImpl{}/* implements PgService {
 
     private final AgentGameRepository agentGameRepository;
     private final GameProviderRepository gameProviderRepository;
@@ -48,10 +46,10 @@ try{
         if (user == null) {
             throw new RuntimeException("Failed to get user from wallet");
         }
-      /*  boolean isActive = verifyAgentGame(this.productId, user.getUpline(), this.provider);
+      *//*  boolean isActive = verifyAgentGame(this.productId, user.getUpline(), this.provider);
         if (!isActive) {
             throw new BadRequestException("Games inactive");
-        }*/
+        }*//*
     return pgClient.pgLogin(pgLoginRequest);
 
     } catch(Exception e)
@@ -97,3 +95,4 @@ try{
 
 
 }
+*/

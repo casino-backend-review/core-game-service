@@ -5,7 +5,7 @@ import com.core.gameservice.entity.GameProvider;
 import java.util.List;
 
 public interface GameProvidersService {
-    List<String> getAllProviders();
+    public List<GameProvider> getAllProviders() ;
 
     GameProvider createGameProvider(GameProvider gameProvider);
 }

@@ -54,4 +54,8 @@ public class AgentGame {
     @Column(length = 100)
     private String note;
 
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "ENUM('A','C') default 'A'")
+    private Status memberStatus;
 }
