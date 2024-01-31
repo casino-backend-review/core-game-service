@@ -13,7 +13,7 @@ env:
   GKE_ZONE: us-central1
   DEPLOYMENT_NAME: core-game-service-deployment
   IMAGE: core-game-service-gke-image
-  TAG: 1.0.5
+  TAG: 1.0.6
 
 jobs:
   setup-build-publish-deploy:
