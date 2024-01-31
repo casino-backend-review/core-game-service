@@ -4,7 +4,7 @@ server:
     context-path: /game-service
 spring:
   datasource:
-    url: jdbc:mysql://google/testing?cloudSqlInstance=testingraje:us-central1:root&socketFactory=com.google.cloud.sql.mysql.SocketFactory&user=root&password=root
+    url: jdbc:mysql://google/testing?cloudSqlInstance=adept-bastion-412819:us-central1:root&socketFactory=com.google.cloud.sql.mysql.SocketFactory&user=root&password=root
 
     #url: jdbc:mysql://35.225.64.61:3306/testing
     username: root
