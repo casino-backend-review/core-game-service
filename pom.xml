@@ -37,6 +37,13 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+			<!-- Google Cloud SQL MySQL Socket Factory -->
+			<dependency>
+				<groupId>com.google.cloud.sql</groupId>
+				<artifactId>mysql-socket-factory</artifactId>
+				<version>1.2.1</version> <!-- Use the latest version available -->
+			</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
