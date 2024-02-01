@@ -1,7 +1,7 @@
 FROM openjdk:17-jdk-slim
 
 # Setting default server port for spring app in container
-ENV SERVER_PORT=8080
+ENV SERVER_PORT=8082
 WORKDIR /app
 
 ADD target/core-game-service-0.0.1-SNAPSHOT.jar /app
