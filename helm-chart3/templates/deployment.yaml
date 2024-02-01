@@ -29,27 +29,3 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
               - containerPort: {{ .Values.service.targetPort }}
-          env:
-            - name: PORT
-              value: "8080"
-            - name: INSTANCE_CONNECTION_NAME
-              value: root
-            - name: DB_HOST
-              value: "127.0.0.1"
-            - name: DB_PORT
-              value: "3306"
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: root
-                  key: username
-            - name: DB_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: root
-                  key: password
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: testing
-                  key: database
