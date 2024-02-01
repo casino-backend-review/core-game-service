@@ -29,16 +29,3 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
               - containerPort: {{ .Values.service.targetPort }}
-        - name: cloud-sql-proxy
-          image: gcr.io/cloudsql-docker/gce-proxy:latest
-          command: [ "/cloud_sql_proxy", "-instances=adept-bastion-412819:us-central1:root=tcp:3306", "-credential_file=/secrets/cloudsql/key.json" ]
-          securityContext:
-              runAsUser: 2  # non-root user
-          volumeMounts:
-              - name: cloudsql-instance-credentials
-                mountPath: /secrets/cloudsql
-                readOnly: true
-      volumes:
-        - name: cloudsql-instance-credentials
-          secret:
-            secretName: cloudsql-instance-credential
