@@ -1,11 +1,12 @@
 package com.core.gameservice.entity;
 
 import com.core.gameservice.enums.Status;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
@@ -14,56 +15,41 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
-@Table(name = "game_providers")
+@Document(collection = "game_providers")
 public class GameProvider {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Id
     private Long id;
 
-    @Column(name = "callback_url", length = 100)
     private String callbackUrl;
 
-    @Column(nullable = false, length = 100)
     private String productId;
 
-    @Column(nullable = false, length = 100)
+
     private String productName;
 
-    @Column(nullable = false, length = 100)
+
     private String category;
 
-    @Column(length = 100)
     private String provider;
 
-    @Column(nullable = false)
     private double rate;
 
     //@Column(name = "company_fix", nullable = false, length = 100)
-    @Column(name = "company_fix" , length = 100)
     private String companyFix;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('A','C') default 'A'")
     private Status status;
 
-    @Column(length = 100)
     private String readme;
 
-    @Column(length = 100)
     private String note;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @Column(name = "is_allow_config")
     private boolean isAllowConfig;
     private Double rateLimit;
 }

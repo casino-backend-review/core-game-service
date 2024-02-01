@@ -7,7 +7,6 @@ import com.core.gameservice.enums.Status;
 import com.core.gameservice.repositories.AgentGameRepository;
 import com.core.gameservice.repositories.GameProviderRepository;
 import com.core.gameservice.services.AgentGameService;
-import jakarta.transaction.Transactional;
 import org.apache.kafka.common.errors.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -167,7 +166,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     }
 
     @Override
-    @Transactional
+   // @Transactional
     public void deleteAgentGame(String username) throws ApiException {
         try {
             agentGameRepository.deleteByUsername(username);

@@ -2,12 +2,16 @@ server:
   port: 8082
   servlet:
     context-path: /game-service
+
 spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/local
-    username: user
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    mongodb:
+      # host: cluster0.fzri6qs         # MongoDB server hostname or IP address
+      port: 27017               # MongoDB server port
+      database: testing           # Database name
+      authentication-database: admin   # Authentication database (optional)
+      uri: mongodb+srv://root:root@cluster0.fzri6qs.mongodb.net/testing
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,6 +19,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+        default_schema: public
 
 services:
   pgService:
