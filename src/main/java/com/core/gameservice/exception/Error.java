@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class ApiResponseMessage<T> {
-    private T data;
-    private Error error;
+public class Error {
+    private int code;
+    private String message;
 }

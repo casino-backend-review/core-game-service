@@ -2,11 +2,12 @@ package com.core.gameservice.services.impl;
 
 import com.core.gameservice.entity.GameProvider;
 import com.core.gameservice.enums.Status;
+import com.core.gameservice.exception.ApiException;
 import com.core.gameservice.repositories.GameProviderRepository;
 import com.core.gameservice.services.GameProvidersService;
 import lombok.AllArgsConstructor;
-import org.apache.kafka.common.errors.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -20,19 +21,24 @@ public class GameProvidersServiceImpl implements GameProvidersService {
 
     GameProviderRepository gameProviderRepository;
     @Override
-    public List<GameProvider> getAllProviders() {
+    public List<GameProvider> getAllProviders() throws ApiException {
         List<GameProvider> byStatus = gameProviderRepository.findByStatus(Status.A);
         if(!CollectionUtils.isEmpty(byStatus)) {
            return byStatus;
         }
         else{
-            throw new ApiException("No game providers found");
+            throw new ApiException("No game providers found",1, HttpStatus.NO_CONTENT);
         }
     }
 
     @Override
-    public GameProvider createGameProvider(GameProvider gameProvider) {
+    public GameProvider createGameProvider(GameProvider gameProvider) throws ApiException {
         gameProvider.setCreatedAt(LocalDateTime.now());
-        return gameProviderRepository.save(gameProvider);
+        try {
+           return gameProviderRepository.save(gameProvider);
+        }
+        catch (Exception exception){
+            throw  new ApiException("Failed to create game provider",1,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
