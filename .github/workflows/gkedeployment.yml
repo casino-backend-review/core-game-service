@@ -2,9 +2,9 @@ name: Build and Deploy to GKE
 
 on:
   push:
-    branches: [ "mongo_member_service_migration" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "mongo_member_service_migration" ]
+    branches: [ "master" ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT_NEW }}
