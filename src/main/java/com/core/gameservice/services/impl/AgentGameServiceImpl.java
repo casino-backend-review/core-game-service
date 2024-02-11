@@ -4,12 +4,12 @@ import com.core.gameservice.dto.*;
 import com.core.gameservice.entity.AgentGame;
 import com.core.gameservice.entity.GameProvider;
 import com.core.gameservice.enums.Status;
+import com.core.gameservice.exception.ApiException;
 import com.core.gameservice.repositories.AgentGameRepository;
 import com.core.gameservice.repositories.GameProviderRepository;
 import com.core.gameservice.services.AgentGameService;
-import jakarta.transaction.Transactional;
-import org.apache.kafka.common.errors.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -36,14 +36,14 @@ public class AgentGameServiceImpl implements AgentGameService {
     public List<AgentGameResponse> createAgentGame(CreateAgentGameRequest request) throws ApiException {
         long gameUplineCount = agentGameRepository.countByUsername(request.getUpline());
         if (!request.getUserType().equals("company") &&gameUplineCount == 0) {
-            throw new ApiException("Upline not found");
+            throw new ApiException("Upline not found",1, HttpStatus.NO_CONTENT);
         }
 
         for (Product game : request.getProducts()) {
             if (game.isChecked()) {
                 Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
                 if (gameDetailOptional.isEmpty()) {
-                    throw new ApiException("Product not found");
+                    throw new ApiException("Product not found",1, HttpStatus.NO_CONTENT);
                 }
                 GameProvider gameDetail = gameDetailOptional.get();
 
@@ -79,7 +79,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     public List<AgentGameResponse> updateAgentGame(UpdateAgentGameRequest request) throws ApiException {
         List<AgentGame> userGames = agentGameRepository.findByUsername(request.getUsername());
         if (userGames.isEmpty()) {
-            throw new ApiException("User not found");
+            throw new ApiException("User not found",1, HttpStatus.NO_CONTENT);
         }
 
         for (Product game : request.getProduct()){
@@ -97,7 +97,7 @@ public class AgentGameServiceImpl implements AgentGameService {
         if (game.isChecked()) {
             Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
             if (gameDetailOptional.isEmpty()) {
-                throw new ApiException("Product not found");
+                throw new ApiException("Product not found",1, HttpStatus.NO_CONTENT);
             }
             GameProvider gameDetail = gameDetailOptional.get();
 
@@ -108,7 +108,7 @@ public class AgentGameServiceImpl implements AgentGameService {
             }
 
             AgentGame agentGame = agentGameRepository.findByUsernameAndProductId(username, game.getProductId())
-                    .orElseThrow(() -> new ApiException("Agent game with the product not found"));
+                    .orElseThrow(() -> new ApiException("Agent game with the product not found",1, HttpStatus.NO_CONTENT));
 
             if(game.getNewGameStatus()!=null) {
                 agentGame.setStatus(game.getNewGameStatus());
@@ -127,7 +127,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                 .findAllByUsernameAndStatusAndProductId(request.getAgentId(), Status.A, request.getGameId());
 
         if (agentGames.isEmpty()) {
-            throw new ApiException("No agent games found for the given criteria");
+            throw new ApiException("No agent games found for the given criteria",1, HttpStatus.NO_CONTENT);
         }
 
         return agentGames.stream()
@@ -135,7 +135,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                     Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(agentGame.getProductId());
                     if (gameDetailOptional.isEmpty()) {
                         try {
-                            throw new ApiException("Game details not found for product ID: " + agentGame.getProductId());
+                            throw new ApiException("Game details not found for product ID: " + agentGame.getProductId(),1, HttpStatus.NO_CONTENT);
                         } catch (ApiException e) {
                             throw new RuntimeException(e);
                         }
@@ -143,7 +143,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                     return convertToAgentGameResponse(agentGame);
                 })
                 .findFirst()
-                .orElseThrow(() -> new ApiException("No matching agent games found"));
+                .orElseThrow(() -> new ApiException("No matching agent games found",1, HttpStatus.NO_CONTENT));
     }
 
     private AgentGameResponse convertToAgentGameResponse(AgentGame agentGame) {
@@ -159,7 +159,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     public List<AgentGameResponse> getAgentGame(String username) throws ApiException {
         List<AgentGame> agentGames = agentGameRepository.findByUsername(username);
         if (agentGames.isEmpty()) {
-            throw new ApiException("Agent games not found");
+            throw new ApiException("Agent games not found",1, HttpStatus.NO_CONTENT);
         }
         return agentGames.stream()
                 .map(this::convertToAgentGameResponse)
@@ -167,12 +167,12 @@ public class AgentGameServiceImpl implements AgentGameService {
     }
 
     @Override
-    @Transactional
+   // @Transactional
     public void deleteAgentGame(String username) throws ApiException {
         try {
             agentGameRepository.deleteByUsername(username);
         } catch (Exception e) {
-            throw new ApiException("Error occurred while deleting agent games: " + e.getMessage());
+            throw new ApiException("Error occurred while deleting agent games: " + e.getMessage(),1, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -180,7 +180,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     public List<AgentGameResponse> getAgentGameByUpline(String uplineUsername,String productId) throws ApiException {
         List<AgentGame> agentGames = agentGameRepository.findByUplineAndProductId(uplineUsername,productId);
         if (agentGames.isEmpty()) {
-            throw new ApiException("Agent games not found");
+            throw new ApiException("Agent games not found",1, HttpStatus.NO_CONTENT);
         }
         return agentGames.stream()
                 .map(this::convertToAgentGameResponse)
@@ -196,7 +196,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                 List<AgentGame> userGames = agentGameRepository.findByUsername(updateAgentGameByProductRequest.getUsername());
 
                 if (userGames.isEmpty()) {
-                    throw new ApiException("User not found");
+                    throw new ApiException("User not found",1, HttpStatus.NO_CONTENT);
                 }
                 processProduct(updateAgentGameByProductRequest.getUsername(),updateAgentGameByProductRequest.getUserType(),updateAgentGameByProductRequest.getUpline(), updateAgentGameByProductRequest.getProduct());
 
@@ -208,10 +208,10 @@ public class AgentGameServiceImpl implements AgentGameService {
     }
 
     @Override
-    public List<AgentGameResponse> updateAgentGameMemberStatus(UpdateAgentGameMemberStatusRequest request) {
+    public List<AgentGameResponse> updateAgentGameMemberStatus(UpdateAgentGameMemberStatusRequest request) throws ApiException {
 
         if(CollectionUtils.isEmpty(request.getProductMemberGameStatusMap())){
-            throw new ApiException(" Product id member status map is empty or null");
+            throw new ApiException(" Product id member status map is empty or null",1, HttpStatus.NO_CONTENT);
         }
         List<AgentGameResponse> agentGameResponses=new ArrayList<>();
 
@@ -227,28 +227,38 @@ public class AgentGameServiceImpl implements AgentGameService {
             });
         }
         else{
-            throw new ApiException("Agent games not found for userId: "+request.getUsername());
+            throw new ApiException("Agent games not found for userId: "+request.getUsername(),1, HttpStatus.NO_CONTENT);
         }
         List<AgentGame> agentGames = agentGameRepository.saveAll(finalUpdatedAgentGame);
       agentGames.stream().parallel().forEach(agentGame -> agentGameResponses.add(convertToAgentGameResponse(agentGame)));
         return agentGameResponses;
     }
 
+    @Override
+    public void deleteAgentGames(List<String> ids) throws ApiException {
+      try{
+        agentGameRepository.deleteAllById(ids);
+    } catch (Exception e) {
+        throw new ApiException("Error occurred while deleting all specified agent games: " + e.getMessage(),1, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    }
+
     private void validateUplineRate(String upline, String productId, double rate) throws ApiException {
         Optional<AgentGame> uplineGameOpt = agentGameRepository.findByUsernameAndProductId(upline, productId);
         if (!uplineGameOpt.isPresent()) {
-            throw new ApiException("Error getting game upline or product upline not allowed");
+            throw new ApiException("Error getting game upline or product upline not allowed",1, HttpStatus.NO_CONTENT);
         }
         AgentGame uplineGame = uplineGameOpt.get();
 
         Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(productId);
         if (!gameDetailOptional.isPresent()) {
-            throw new ApiException("Error getting game details");
+            throw new ApiException("Error getting game details",1, HttpStatus.FORBIDDEN);
         }
         GameProvider gameDetail = gameDetailOptional.get();
 
         if (rate > uplineGame.getRate() || rate > gameDetail.getRate()) {
-            throw new ApiException("Product error rate limit exceeded");
+            throw new ApiException("Product error rate limit exceeded",1, HttpStatus.FORBIDDEN);
         }
     }
 

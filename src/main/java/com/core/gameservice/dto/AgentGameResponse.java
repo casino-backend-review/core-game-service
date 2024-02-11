@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AgentGameResponse {
 
-    private Long id;
+    private String id;
     private String username;
     private String upline;
     private String userType;

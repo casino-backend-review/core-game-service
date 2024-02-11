@@ -2,9 +2,9 @@ name: Build and Deploy to GKE
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "mongo_member_service_migration" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "mongo_member_service_migration" ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT_NEW }}
@@ -13,7 +13,7 @@ env:
   GKE_ZONE: us-central1
   DEPLOYMENT_NAME: core-game-service-deployment
   IMAGE: core-game-service-gke-image
-  TAG: 1.0.13
+  TAG: 1.0.14
 
 jobs:
   setup-build-publish-deploy:

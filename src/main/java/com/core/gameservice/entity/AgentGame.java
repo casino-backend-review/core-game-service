@@ -1,11 +1,12 @@
 package com.core.gameservice.entity;
 
 import com.core.gameservice.enums.Status;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
@@ -13,49 +14,33 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Entity
-@Table(name = "agent_game")
+@Document(collection = "agent_game")
 public class AgentGame {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false, length = 255)
     private String username;
 
-    @Column(length = 100)
     private String upline;
 
-    @Column(nullable = false, length = 100)
     private String userType;
 
-    @Column(nullable = false)
     private double rate;
 
-    @Column(nullable = false)
     private Double rateLimit;
 
-    @Column(nullable = false, length = 100)
     private String productId;
 
-    @Column(length = 100)
     private String provider;
 
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('A','C') default 'A'")
+
     private Status status;
 
-    @Column(length = 100)
     private String note;
 
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, columnDefinition = "ENUM('A','C') default 'A'")
     private Status memberStatus;
 }
