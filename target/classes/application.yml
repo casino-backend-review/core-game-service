@@ -6,11 +6,11 @@ server:
 spring:
   data:
     mongodb:
-      # host: cluster0.fzri6qs         # MongoDB server hostname or IP address
+      host: localhost           # MongoDB server hostname or IP address
       port: 27017               # MongoDB server port
-      database: testing           # Database name
+      database: testDb           # Database name
       authentication-database: admin   # Authentication database (optional)
-      uri: mongodb+srv://root:root@cluster0.fzri6qs.mongodb.net/testing
+      uri: mongodb://localhost:27017/testDb
 
   jpa:
     hibernate:
