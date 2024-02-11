@@ -51,6 +51,16 @@ public class AgentGameController {
             return getFailureResponseEntity(exception);
         }
     }
+
+    @DeleteMapping("/delete/agentGames")
+    public ResponseEntity<ApiResponseMessage<String>> deleteAgentGames(@RequestParam List<String> ids ) {
+        try {
+            agentGameService.deleteAgentGames(ids);
+            return ResponseEntity.ok(ApiResponseMessage.<String>builder().data("Specified Agent games deleted successfully").build());
+        }catch (ApiException exception) {
+            return getFailureResponseEntity(exception);
+        }
+    }
     @PutMapping("/update-product-game-member-status/by-username-usertype")
     public ResponseEntity<ApiResponseMessage<List<AgentGameResponse>>> updateAgentGameMemberStatus(@RequestBody UpdateAgentGameMemberStatusRequest request) {
         try {

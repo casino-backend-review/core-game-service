@@ -234,6 +234,16 @@ public class AgentGameServiceImpl implements AgentGameService {
         return agentGameResponses;
     }
 
+    @Override
+    public void deleteAgentGames(List<String> ids) throws ApiException {
+      try{
+        agentGameRepository.deleteAllById(ids);
+    } catch (Exception e) {
+        throw new ApiException("Error occurred while deleting all specified agent games: " + e.getMessage(),1, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    }
+
     private void validateUplineRate(String upline, String productId, double rate) throws ApiException {
         Optional<AgentGame> uplineGameOpt = agentGameRepository.findByUsernameAndProductId(upline, productId);
         if (!uplineGameOpt.isPresent()) {

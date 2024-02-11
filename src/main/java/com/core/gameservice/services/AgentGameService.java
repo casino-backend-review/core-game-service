@@ -17,4 +17,6 @@ public interface AgentGameService {
     List<AgentGameResponse> updateAgentGameList(List<UpdateAgentGameByProductRequest> request) throws ApiException;
 
     List<AgentGameResponse> updateAgentGameMemberStatus(UpdateAgentGameMemberStatusRequest request) throws ApiException;
+
+    void deleteAgentGames(List<String> agentGameDeleteRequest) throws ApiException;
 }
