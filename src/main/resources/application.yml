@@ -6,11 +6,11 @@ server:
 spring:
   data:
     mongodb:
-      host: localhost           # MongoDB server hostname or IP address
+      # host: cluster0.fzri6qs         # MongoDB server hostname or IP address
       port: 27017               # MongoDB server port
-      database: testDb           # Database name
+      database: testing           # Database name
       authentication-database: admin   # Authentication database (optional)
-      uri: mongodb://localhost:27017/testDb
+      uri: mongodb+srv://root:root@cluster0.fzri6qs.mongodb.net/testing
 
   jpa:
     hibernate:
@@ -22,11 +22,9 @@ spring:
         default_schema: public
 
 services:
-  pgService:
-    url:  http://localhost:8089/partner-service
   walletService:
     #  url: http://34.132.133.90:8086/wallet-service
-    url: http://localhost:8086/wallet-service
+    url: http://34.41.109.236:8086/wallet-service
 
 
 partner:
