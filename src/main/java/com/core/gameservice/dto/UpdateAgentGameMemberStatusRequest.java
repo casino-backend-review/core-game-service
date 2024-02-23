@@ -1,12 +1,12 @@
 package com.core.gameservice.dto;
 
 import com.core.gameservice.enums.Status;
+import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 import java.util.Map;
 
 @Data
@@ -16,6 +16,6 @@ import java.util.Map;
 public class UpdateAgentGameMemberStatusRequest {
 
     private String username;
-    private String userType;
+    private UserType userType;
     private Map<String, Status> productMemberGameStatusMap;
 }

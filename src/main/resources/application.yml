@@ -23,7 +23,6 @@ spring:
 
 services:
   walletService:
-    #  url: http://34.132.133.90:8086/wallet-service
     url: http://34.41.109.236:8086/wallet-service
 
 

@@ -1,15 +1,16 @@
 package com.core.gameservice.controllers;
 
 import com.core.gameservice.dto.*;
-import com.core.gameservice.exception.Error;
 import com.core.gameservice.exception.ApiException;
 import com.core.gameservice.exception.ApiResponseMessage;
+import com.core.gameservice.exception.Error;
 import com.core.gameservice.services.AgentGameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -72,10 +73,11 @@ public class AgentGameController {
     }
 
     @PutMapping("/update-list-users-game-status-rate-limit/by-product")
-    public ResponseEntity<ApiResponseMessage<List<AgentGameResponse>>> updateAgentGameListByProduct(@RequestBody List<UpdateAgentGameByProductRequest> request) {
+    public ResponseEntity<ApiResponseMessage<HashMap<String, List<AgentGameResponse>>>> updateAgentGameListByProduct(@RequestBody List<UpdateAgentGameByProductRequest> request, @RequestHeader("Authorization") String authorizationHeader) {
         try {
-            List<AgentGameResponse> response = agentGameService.updateAgentGameList(request);
-            return ResponseEntity.ok(ApiResponseMessage.<List<AgentGameResponse>>builder().data(response).build());
+            String token = authorizationHeader.replace("Bearer ", "");
+            HashMap<String, List<AgentGameResponse>> response = agentGameService.updateAgentGameList(request, token);
+            return ResponseEntity.ok(ApiResponseMessage.<HashMap<String, List<AgentGameResponse>>>builder().data(response).build());
         } catch (ApiException exception) {
             return getFailureResponseEntity(exception);
         }

@@ -3,6 +3,7 @@ com\core\gameservice\dto\UpdateAgentGameRequest$UpdateAgentGameRequestBuilder.cl
 com\core\gameservice\enums\Status.class
 com\core\gameservice\entity\AgentGame$AgentGameBuilder.class
 com\core\gameservice\config\OpenApiConfig.class
+com\core\gameservice\enums\UserType.class
 com\core\gameservice\dto\Product$ProductBuilder.class
 com\core\gameservice\dto\PartnerLoginResponse$PartnerLoginResponseBuilder.class
 com\core\gameservice\controllers\PgController.class

@@ -1,6 +1,7 @@
 package com.core.gameservice.dto;
 
 import com.core.gameservice.enums.Status;
+import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +16,7 @@ public class AgentGameResponse {
     private String id;
     private String username;
     private String upline;
-    private String userType;
+    private UserType userType;
     private Double rate;
     private Double rateLimit;
     private String productId;

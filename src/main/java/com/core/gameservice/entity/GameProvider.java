@@ -52,4 +52,5 @@ public class GameProvider {
 
     private boolean isAllowConfig;
     private Double rateLimit;
+    private String providerType;
 }

@@ -11,10 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Product {
-    private boolean checked;
     private Double rate;
     private Double rateLimit;
     private String productId;
     private String productName;
     private Status newGameStatus;
+    private boolean isChecked;
+
 }

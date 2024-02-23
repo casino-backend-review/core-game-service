@@ -2,6 +2,7 @@ package com.core.gameservice.repositories;
 
 import com.core.gameservice.entity.AgentGame;
 import com.core.gameservice.enums.Status;
+import com.core.gameservice.enums.UserType;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -30,7 +31,7 @@ public interface AgentGameRepository extends MongoRepository<AgentGame, String> 
 
     List<AgentGame> findByUplineAndProductId(String uplineUsername,String productId);
 
-    List<AgentGame> findAllByUsernameAndUserType(String username, String userType);
+    List<AgentGame> findAllByUsernameAndUserType(String username, UserType userType);
 
     // Add other query methods as required
 }

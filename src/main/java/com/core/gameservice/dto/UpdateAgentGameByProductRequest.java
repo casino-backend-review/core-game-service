@@ -1,11 +1,10 @@
 package com.core.gameservice.dto;
 
+import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -13,8 +12,8 @@ import java.util.List;
 @Builder
 public class UpdateAgentGameByProductRequest {
     private String username;
-    private String userType;
+    private UserType userType;
     private String upline;
     private Product product;
-    private List<String> downline;
+    private Boolean isDownlineImpact; //checked
 }

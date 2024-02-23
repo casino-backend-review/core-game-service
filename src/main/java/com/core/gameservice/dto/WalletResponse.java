@@ -1,5 +1,6 @@
 package com.core.gameservice.dto;
 
+import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ public class WalletResponse {
     private String token;
     private String username;
     private double balance;
-    private String type;// UserType
+    private UserType type;// UserType
     private String refSale;
     private String upline;
     private Date createdAt;

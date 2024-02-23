@@ -1,6 +1,7 @@
 package com.core.gameservice.entity;
 
 import com.core.gameservice.enums.Status;
+import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class AgentGame {
 
     private String upline;
 
-    private String userType;
+    private UserType userType;
 
     private double rate;
 

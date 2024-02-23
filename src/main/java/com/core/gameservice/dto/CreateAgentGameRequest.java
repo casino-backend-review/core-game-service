@@ -1,5 +1,6 @@
 package com.core.gameservice.dto;
 
+import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.util.List;
 @Builder
 public class CreateAgentGameRequest {
     private String username;
-    private String userType;
+    private UserType userType;
     private String upline;
     private List<Product> products; // Ensure this matches with your getter method
 }
