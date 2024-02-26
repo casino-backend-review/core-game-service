@@ -16,6 +16,5 @@ public class Product {
     private String productId;
     private String productName;
     private Status newGameStatus;
-    private boolean isChecked;
 
 }

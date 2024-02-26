@@ -42,14 +42,13 @@ public class AgentGameServiceImpl implements AgentGameService {
     public List<AgentGameResponse> createAgentGame(CreateAgentGameRequest request) throws ApiException {
         long gameUplineCount = agentGameRepository.countByUsername(request.getUpline());
         if (!request.getUserType().equals(UserType.company) && gameUplineCount == 0) {
-            throw new ApiException("Upline not found",1, HttpStatus.NO_CONTENT);
+            throw new ApiException("Upline not found",1, HttpStatus.FORBIDDEN);
         }
 
         for (Product game : request.getProducts()) {
-            if (game.isChecked()) {
                 Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
                 if (gameDetailOptional.isEmpty()) {
-                    throw new ApiException("Product not found",1, HttpStatus.NO_CONTENT);
+                    throw new ApiException("Product not found",1,HttpStatus.FORBIDDEN);
                 }
                 GameProvider gameDetail = gameDetailOptional.get();
 
@@ -65,6 +64,8 @@ public class AgentGameServiceImpl implements AgentGameService {
                 newAgentGame.setRate(game.getRate());
                 newAgentGame.setRateLimit(game.getRateLimit());
                 newAgentGame.setProvider(gameDetail.getProvider());
+                newAgentGame.setProductName(gameDetail.getProductName());
+                newAgentGame.setCategory(gameDetail.getCategory());
                 newAgentGame.setStatus(Status.A);
                 newAgentGame.setCreatedAt(LocalDateTime.now());
 
@@ -73,37 +74,59 @@ public class AgentGameServiceImpl implements AgentGameService {
                 }
                 agentGameRepository.save(newAgentGame);
             }
-        }
 
         List<AgentGame> agentGames = agentGameRepository.findByUsername(request.getUsername());
         return agentGames.stream()
                 .map(this::convertToAgentGameResponse)
-                .collect(Collectors.toList());
+                .collect(Collectors
+                        .toList());
     }
 
     @Override
     public List<AgentGameResponse> updateAgentGame(UpdateAgentGameRequest request) throws ApiException {
         List<AgentGame> userGames = agentGameRepository.findByUsername(request.getUsername());
         if (userGames.isEmpty()) {
-            throw new ApiException("User not found",1, HttpStatus.NO_CONTENT);
+            throw new ApiException("User not found",1,HttpStatus.FORBIDDEN);
+        }
+        List<AgentGame> updatedGamesData = new ArrayList<>();
+       /* if(request.getProducts()==null){
+            throw new ApiException("Product list should not be null",1,HttpStatus.FORBIDDEN);
+        }*/
+
+        for (Product game : request.getProducts()){
+
+            if(!(game.getRate() >=0 && game.getRate()<=100) && !(game.getRateLimit()>=0 && game.getRateLimit()<=100 )){
+                throw new ApiException(String.format("rate or rateLimit range is exceeded for productId %s",game.getProductId()),1,HttpStatus.FORBIDDEN);
+
+            }
+
+            Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
+            if (gameDetailOptional.isEmpty()) {
+                throw new ApiException("Product not found",1,HttpStatus.FORBIDDEN);
+            }
+            UserAndDownlineHierarchyInfo userAndDownlineHierarchyInfo = request.getUserAndDownlineHierarchyInfo();
+
+            UpdateAgentGameByProductRequest updateAgentGameByProductRequest=UpdateAgentGameByProductRequest.builder()
+                    .product(game).upline(request.getUpline()).username(request.getUsername()).userType(request.getUserType()).build();
+            updatePercentageAndStatus(updateAgentGameByProductRequest, userAndDownlineHierarchyInfo, updatedGamesData);                            // You can perform further operations with 'info' here
+
+          //  processProduct(request.getUsername(),request.getUserType(),request.getUpline(), game);
+
         }
 
-        for (Product game : request.getProduct()){
-            processProduct(request.getUsername(),request.getUserType(),request.getUpline(), game);
-
-        }
-
-        List<AgentGame> updatedGames = agentGameRepository.findByUsername(request.getUsername());
-        return updatedGames.stream()
+        List<AgentGame> agentGameList = updatedGamesData.stream().filter(userGame -> userGame.getUsername().equals(request.getUsername()) && userGame.getUserType().equals(request.getUserType())).toList();
+        //List<AgentGame> updatedGames = agentGameRepository.findByUsername(request.getUsername());
+        return agentGameList.stream()
                 .map(this::convertToAgentGameResponse)
                 .collect(Collectors.toList());
     }
 
+/*
     private void processProduct(String username, UserType userType, String upline, Product game) throws ApiException {
         if (game.isChecked()) {
             Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(game.getProductId());
             if (gameDetailOptional.isEmpty()) {
-                throw new ApiException("Product not found",1, HttpStatus.NO_CONTENT);
+                throw new ApiException("Product not found",1,HttpStatus.FORBIDDEN);
             }
             GameProvider gameDetail = gameDetailOptional.get();
 
@@ -114,7 +137,7 @@ public class AgentGameServiceImpl implements AgentGameService {
             }
 
             AgentGame agentGame = agentGameRepository.findByUsernameAndProductId(username, game.getProductId())
-                    .orElseThrow(() -> new ApiException("Agent game with the product not found",1, HttpStatus.NO_CONTENT));
+                    .orElseThrow(() -> new ApiException("Agent game with the product not found",1,HttpStatus.FORBIDDEN));
 
             if(game.getNewGameStatus()!=null) {
                 agentGame.setStatus(game.getNewGameStatus());
@@ -126,6 +149,7 @@ public class AgentGameServiceImpl implements AgentGameService {
             agentGameRepository.save(agentGame);
         }
     }
+*/
 
     @Override
     public AgentGameResponse getAgentGameDetails(GetAgentGameDetailsRequest request) throws ApiException {
@@ -133,7 +157,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                 .findAllByUsernameAndStatusAndProductId(request.getAgentId(), Status.A, request.getGameId());
 
         if (agentGames.isEmpty()) {
-            throw new ApiException("No agent games found for the given criteria",1, HttpStatus.NO_CONTENT);
+            throw new ApiException("No agent games found for the given criteria",1,HttpStatus.FORBIDDEN);
         }
 
         return agentGames.stream()
@@ -141,7 +165,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                     Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(agentGame.getProductId());
                     if (gameDetailOptional.isEmpty()) {
                         try {
-                            throw new ApiException("Game details not found for product ID: " + agentGame.getProductId(),1, HttpStatus.NO_CONTENT);
+                            throw new ApiException("Game details not found for product ID: " + agentGame.getProductId(),1,HttpStatus.FORBIDDEN);
                         } catch (ApiException e) {
                             throw new RuntimeException(e);
                         }
@@ -149,13 +173,14 @@ public class AgentGameServiceImpl implements AgentGameService {
                     return convertToAgentGameResponse(agentGame);
                 })
                 .findFirst()
-                .orElseThrow(() -> new ApiException("No matching agent games found",1, HttpStatus.NO_CONTENT));
+                .orElseThrow(() -> new ApiException("No matching agent games found",1,HttpStatus.FORBIDDEN));
     }
 
     private AgentGameResponse convertToAgentGameResponse(AgentGame agentGame) {
 
         return AgentGameResponse.builder().id(agentGame.getId()).username(agentGame.getUsername()).
                 userType(agentGame.getUserType()).upline(agentGame.getUpline())
+                .productName(agentGame.getProductName()).category(agentGame.getCategory())
                 .productId(agentGame.getProductId()).provider(agentGame.getProvider()).rate(agentGame.getRate()).
                 rateLimit(agentGame.getRateLimit()).note(agentGame.getNote()).status(agentGame.getStatus()).memberStatus(agentGame.getMemberStatus()).build();
     }
@@ -165,7 +190,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     public List<AgentGameResponse> getAgentGame(String username) throws ApiException {
         List<AgentGame> agentGames = agentGameRepository.findByUsername(username);
         if (agentGames.isEmpty()) {
-            throw new ApiException("Agent games not found",1, HttpStatus.NO_CONTENT);
+            throw new ApiException("Agent games not found",1,HttpStatus.FORBIDDEN);
         }
         return agentGames.stream()
                 .map(this::convertToAgentGameResponse)
@@ -186,7 +211,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     public List<AgentGameResponse> getAgentGameByUpline(String uplineUsername,String productId) throws ApiException {
         List<AgentGame> agentGames = agentGameRepository.findByUplineAndProductId(uplineUsername,productId);
         if (agentGames.isEmpty()) {
-            throw new ApiException("Agent games not found",1, HttpStatus.NO_CONTENT);
+            throw new ApiException("Agent games not found",1,HttpStatus.FORBIDDEN);
         }
         return agentGames.stream()
                 .map(this::convertToAgentGameResponse)
@@ -198,23 +223,38 @@ public class AgentGameServiceImpl implements AgentGameService {
         if(!CollectionUtils.isEmpty(request)){
 
             for (UpdateAgentGameByProductRequest updateAgentGameByProductRequest : request) {
+
                 if (updateAgentGameByProductRequest.getIsDownlineImpact()) {
+                    Product product = updateAgentGameByProductRequest.getProduct();
+                    if(product==null){
+                        throw new ApiException("Product should not be null",1,HttpStatus.FORBIDDEN);
+                    }
+                    Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(updateAgentGameByProductRequest.getProduct().getProductId());
+                    if (gameDetailOptional.isEmpty()) {
+                        throw new ApiException("Product not found",1,HttpStatus.FORBIDDEN);
+                    }
+
+                    if(!(product.getRate() >=0 && product.getRate()<=100) && !(product.getRateLimit()>=0 && product.getRateLimit()<=100 )){
+                        throw new ApiException(String.format("rate or rateLimit range is exceeded for productId %s",product.getProductId()),1,HttpStatus.FORBIDDEN);
+
+                    }
                     List<AgentGameResponse> agentGameResponses = new ArrayList<>();
 
-                    ApiResponseMessage<List<UserAndDownlineHierarchyInfo>> downline = memberClient.getDownline(updateAgentGameByProductRequest.getUsername(), updateAgentGameByProductRequest.getUserType(), token);
+                    ApiResponseMessage<UserAndDownlineHierarchyInfo> downline = memberClient.findUserAndDownlineHierarchyInfo(updateAgentGameByProductRequest.getUsername(), updateAgentGameByProductRequest.getUserType(), token);
 
-                    List<UserAndDownlineHierarchyInfo> downlineData = downline.getData();
-
-                    Optional<UserAndDownlineHierarchyInfo> userAndDownlineHierarchyInfo = downlineData.stream().filter(data -> data.getUser().getUsername().equals(updateAgentGameByProductRequest.getUsername())).findFirst();
-
-                    if (userAndDownlineHierarchyInfo.isEmpty()) {
-                        throw new ApiException("User not found", 1, HttpStatus.NO_CONTENT);
+                    if(downline.getError()!=null){
+                        throw  new ApiException(downline.getError().getMessage(),1,HttpStatus.FORBIDDEN);
                     }
+
+                    UserAndDownlineHierarchyInfo userAndDownlineHierarchyInfo = downline.getData();
+
+
+
                     List<AgentGame> updatedGames = new ArrayList<>();
-                    updatePercentageAndStatus(updateAgentGameByProductRequest, userAndDownlineHierarchyInfo.get(), downlineData, updatedGames);                            // You can perform further operations with 'info' here
+                    updatePercentageAndStatus(updateAgentGameByProductRequest, userAndDownlineHierarchyInfo, updatedGames);                            // You can perform further operations with 'info' here
 
 
-                    processProduct(updateAgentGameByProductRequest.getUsername(), updateAgentGameByProductRequest.getUserType(), updateAgentGameByProductRequest.getUpline(), updateAgentGameByProductRequest.getProduct());
+               //  processProduct(updateAgentGameByProductRequest.getUsername(), updateAgentGameByProductRequest.getUserType(), updateAgentGameByProductRequest.getUpline(), updateAgentGameByProductRequest.getProduct());
 
                     updatedGames.forEach(agentGame -> agentGameResponses.add(convertToAgentGameResponse(agentGame)));
                     result.put(updateAgentGameByProductRequest.getUsername(), agentGameResponses);
@@ -224,70 +264,72 @@ public class AgentGameServiceImpl implements AgentGameService {
         return result;
     }
 
-    private void updatePercentageAndStatus(UpdateAgentGameByProductRequest updateAgentGameByProductRequest, UserAndDownlineHierarchyInfo userAndDownlineHierarchyInfo, List<UserAndDownlineHierarchyInfo> downlineData, List<AgentGame> updatedGames) throws ApiException {
+    private void updatePercentageAndStatus(UpdateAgentGameByProductRequest updateAgentGameByProductRequest, UserAndDownlineHierarchyInfo userAndDownlineHierarchyInfo,List<AgentGame> updatedGames) throws ApiException {
         User user = userAndDownlineHierarchyInfo.getUser();
         Product product = updateAgentGameByProductRequest.getProduct();
-        if (!user.getType().equals(UserType.company) && !user.getType().equals(UserType.admin)) {
+        if (!user.getType().equals(UserType.company) && !user.getType().equals(UserType.admin) && !user.getType().equals(UserType.member)) {
             if (user.getUpline() != null && product.getProductId() != null && product.getRate() != null) {
                 validateUplineRate(user.getUpline(), product.getProductId(), product.getRate());
+
             }
         }
         AgentGame agentGame = agentGameRepository.findByUsernameAndProductId(user.getUsername(), product.getProductId())
-                .orElseThrow(() -> new ApiException(String.format("Agent game username %s with the product id %s not found", user.getUsername(), product.getProductId()), 1, HttpStatus.NO_CONTENT));
-        ;
+                .orElseThrow(() -> new ApiException(String.format("Agent game username %s with the product id %s not found", user.getUsername(), product.getProductId()), 1,HttpStatus.FORBIDDEN));
+
 
         agentGame.setRate(product.getRate());
         agentGame.setRateLimit(product.getRateLimit());
         agentGame.setStatus(product.getNewGameStatus());
         agentGame.setUpdatedAt(LocalDateTime.now());
-        agentGameRepository.save(agentGame); //update agent Game
         updatedGames.add(agentGame);
         List<User> downlines = userAndDownlineHierarchyInfo.getDownlines();
-        for (User userData : downlines) {
-            if (!userData.getType().equals(UserType.member)) {
-                Optional<UserAndDownlineHierarchyInfo> first = downlineData.stream().filter(userAndDownlineHierarchyInfo1 -> userAndDownlineHierarchyInfo1.getUser().getUsername().equals(userData.getUsername())).findFirst();
+        if(!CollectionUtils.isEmpty(downlines)) {
+            for (User userData : downlines) {
+                if (!userData.getType().equals(UserType.member) && !userData.getType().equals(UserType.admin)) {
 
-                UserAndDownlineHierarchyInfo newUserAndDownlineHierarchyInfo = UserAndDownlineHierarchyInfo.builder().user(userData).downlines(first.map(UserAndDownlineHierarchyInfo::getDownlines).orElse(null)).build();
-                AgentGame agentGame1 = agentGameRepository.findByUsernameAndProductId(userData.getUsername(), product.getProductId()).orElseThrow(() -> new ApiException(String.format("Agent game username %s with the product id %s not found", user.getUsername(), product.getProductId()), 1, HttpStatus.NO_CONTENT));
+                    AgentGame agentGame1 = agentGameRepository.findByUsernameAndProductId(userData.getUsername(), product.getProductId()).orElseThrow(() -> new ApiException(String.format("Agent game username %s with the product id %s not found", user.getUsername(), product.getProductId()), 1, HttpStatus.FORBIDDEN));
 
-                Double newRateLimit = product.getRateLimit();
-                double oldRate = agentGame1.getRate();
-                Double oldRateLimit = agentGame1.getRateLimit();
-                Double rate;
-                Double rateLimit;
-                if (newRateLimit > (oldRate + oldRateLimit)) {
-                    Double difference = newRateLimit - (oldRate + oldRateLimit);
-                    rate = oldRate + (difference) / 2;
-                    rateLimit = oldRateLimit + (difference) / 2;
-                } else if (newRateLimit < (oldRate + oldRateLimit)) {
-                    Double difference = (oldRate + oldRateLimit) - newRateLimit;
-                    rate = oldRate - (difference) / 2;
-                    rateLimit = oldRateLimit - (difference) / 2;
-                } else {
-                    rate = oldRate;
-                    rateLimit = oldRateLimit;
+                    if (product.getRateLimit() < agentGame1.getRateLimit()) {
+                        throw new ApiException(String.format("%s it is prohibited to have fewer downlines than the existing once for downline at present", agentGame1.getProductId()), 1, HttpStatus.FORBIDDEN);
+                    }
+                    Double newRateLimit = product.getRateLimit();
+                    double oldRate = agentGame1.getRate();
+                    Double oldRateLimit = agentGame1.getRateLimit();
+                    Double newRate;
+                    if (newRateLimit > (oldRate + oldRateLimit)) {
+                        Double difference = newRateLimit - (oldRate + oldRateLimit);
+                        newRate = oldRate + difference;
+                    } else if (newRateLimit < (oldRate + oldRateLimit)) {
+                        Double difference = (oldRate + oldRateLimit) - newRateLimit;
+                        newRate = oldRate - difference;
+                    } else {
+                        newRate = oldRate;
+                    }
+
+                    UpdateAgentGameByProductRequest updateAgentGameByProductRequest1 = UpdateAgentGameByProductRequest.builder().
+                            username(userData.getUsername())
+                            .userType(userData.getType())
+                            .upline(userData.getUpline())
+                            .product(Product.builder().productId(updateAgentGameByProductRequest.getProduct().getProductId())
+                                    .productName(updateAgentGameByProductRequest.getProduct().getProductName())
+                                    .newGameStatus(updateAgentGameByProductRequest.getProduct().getNewGameStatus()).rate(newRate).rateLimit(agentGame1.getRateLimit()).build())
+                            .build();
+
+                    updatePercentageAndStatus(updateAgentGameByProductRequest1, UserAndDownlineHierarchyInfo.builder().user(userData).build(), updatedGames);
                 }
 
-                UpdateAgentGameByProductRequest updateAgentGameByProductRequest1 = UpdateAgentGameByProductRequest.builder().
-                        username(userData.getUsername())
-                        .userType(userData.getType())
-                        .upline(userData.getUpline())
-                        .product(Product.builder().productId(updateAgentGameByProductRequest.getProduct().getProductId())
-                                .productName(updateAgentGameByProductRequest.getProduct().getProductName())
-                                .newGameStatus(updateAgentGameByProductRequest.getProduct().getNewGameStatus()).rate(rate).rateLimit(rateLimit).build())
-                        .build();
-
-                updatePercentageAndStatus(updateAgentGameByProductRequest1, newUserAndDownlineHierarchyInfo, downlineData, updatedGames);
             }
-
         }
+        agentGameRepository.saveAll(updatedGames); //update agent Game
+
+
     }
 
     @Override
     public List<AgentGameResponse> updateAgentGameMemberStatus(UpdateAgentGameMemberStatusRequest request) throws ApiException {
 
         if(CollectionUtils.isEmpty(request.getProductMemberGameStatusMap())){
-            throw new ApiException(" Product id member status map is empty or null",1, HttpStatus.NO_CONTENT);
+            throw new ApiException(" Product id member status map is empty or null",1,HttpStatus.FORBIDDEN);
         }
         List<AgentGameResponse> agentGameResponses=new ArrayList<>();
 
@@ -303,7 +345,7 @@ public class AgentGameServiceImpl implements AgentGameService {
             });
         }
         else{
-            throw new ApiException("Agent games not found for userId: "+request.getUsername(),1, HttpStatus.NO_CONTENT);
+            throw new ApiException("Agent games not found for userId: "+request.getUsername(),1,HttpStatus.FORBIDDEN);
         }
         List<AgentGame> agentGames = agentGameRepository.saveAll(finalUpdatedAgentGame);
       agentGames.stream().parallel().forEach(agentGame -> agentGameResponses.add(convertToAgentGameResponse(agentGame)));
@@ -323,7 +365,7 @@ public class AgentGameServiceImpl implements AgentGameService {
     private void validateUplineRate(String upline, String productId, double rate) throws ApiException {
         Optional<AgentGame> uplineGameOpt = agentGameRepository.findByUsernameAndProductId(upline, productId);
         if (uplineGameOpt.isEmpty()) {
-            throw new ApiException("Error getting game upline or product upline not allowed",1, HttpStatus.NO_CONTENT);
+            throw new ApiException("Error getting game upline or product upline not allowed",1,HttpStatus.FORBIDDEN);
         }
         AgentGame uplineGame = uplineGameOpt.get();
 
@@ -333,9 +375,10 @@ public class AgentGameServiceImpl implements AgentGameService {
         }
         GameProvider gameDetail = gameDetailOptional.get();
 
+/*
         if (rate > uplineGame.getRate() || rate > gameDetail.getRate()) {
             throw new ApiException("Product error rate limit exceeded",1, HttpStatus.FORBIDDEN);
-        }
+        }*/
     }
 
 }

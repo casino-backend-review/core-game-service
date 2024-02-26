@@ -56,5 +56,29 @@ public class MemberClientImpl implements MemberClient {
         }
     }
 
+    @Override
+    public ApiResponseMessage<UserAndDownlineHierarchyInfo> findUserAndDownlineHierarchyInfo(String username, UserType userType, String token) throws ApiException {
+        try {
+
+            ResponseEntity<ApiResponseMessage<UserAndDownlineHierarchyInfo>> block = webClient.get()
+                    .uri("/user/userAndDownlineHierarchy/username/{username}/usertype/{userType}", username, userType)
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .toEntity(new ParameterizedTypeReference<ApiResponseMessage<UserAndDownlineHierarchyInfo>>() {
+                    })
+                    .block();
+
+            if (block != null ) {
+
+                return block.getBody();
+            } else {
+                throw new ApiException("member service Error: " + Objects.requireNonNull(Objects.requireNonNull(block.getBody()).getError().getMessage()), block.getBody().getError().getCode(), HttpStatus.FORBIDDEN);
+
+            }
+        } catch (WebClientResponseException | ApiException exception) {
+            throw new ApiException("member service Error: " + exception.getMessage(), 1, HttpStatus.FORBIDDEN);
+        }
+    }
+
 
 }

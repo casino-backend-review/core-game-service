@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface MemberClient {
 
-
     ApiResponseMessage<List<UserAndDownlineHierarchyInfo>> getDownline(String uplineUsername, UserType userType, String token) throws ApiException;
+    ApiResponseMessage<UserAndDownlineHierarchyInfo> findUserAndDownlineHierarchyInfo(String username, UserType userType, String token) throws ApiException;
 }

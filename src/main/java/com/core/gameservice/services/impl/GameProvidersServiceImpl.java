@@ -27,7 +27,7 @@ public class GameProvidersServiceImpl implements GameProvidersService {
            return byStatus;
         }
         else{
-            throw new ApiException("No game providers found",1, HttpStatus.NO_CONTENT);
+            throw new ApiException("No game providers found",1,HttpStatus.FORBIDDEN);
         }
     }
 

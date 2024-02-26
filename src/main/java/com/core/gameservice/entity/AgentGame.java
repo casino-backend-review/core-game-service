@@ -26,13 +26,16 @@ public class AgentGame {
 
     private UserType userType;
 
-    private double rate;
+    private Double rate;
 
     private Double rateLimit;
 
     private String productId;
 
     private String provider;
+    private String productName;
+
+    private String category;
 
     private LocalDateTime createdAt;
 

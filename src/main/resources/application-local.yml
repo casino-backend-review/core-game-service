@@ -11,6 +11,7 @@ spring:
       database: testDb           # Database name
       authentication-database: admin   # Authentication database (optional)
       uri: mongodb://localhost:27017/testDb
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -28,7 +29,6 @@ services:
   memberService:
     #url: http://34.67.253.22:8080/member-service
     url: http://localhost:8080/member-service
-
 
 partner:
   pg:

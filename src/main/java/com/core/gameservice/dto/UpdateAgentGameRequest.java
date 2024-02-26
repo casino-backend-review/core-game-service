@@ -16,6 +16,7 @@ public class UpdateAgentGameRequest {
     private String username;
     private UserType userType;
     private String upline;
-    private List<Product> product;
+    private List<Product> products;
     private List<String> downline;
+    private UserAndDownlineHierarchyInfo userAndDownlineHierarchyInfo;
 }
