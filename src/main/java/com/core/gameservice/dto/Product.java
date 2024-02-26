@@ -15,6 +15,6 @@ public class Product {
     private Double rateLimit;
     private String productId;
     private String productName;
-    private Status newGameStatus;
+    private Status status;
 
 }

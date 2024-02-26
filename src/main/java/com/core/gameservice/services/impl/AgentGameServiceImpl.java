@@ -66,7 +66,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                 newAgentGame.setProvider(gameDetail.getProvider());
                 newAgentGame.setProductName(gameDetail.getProductName());
                 newAgentGame.setCategory(gameDetail.getCategory());
-                newAgentGame.setStatus(Status.A);
+                newAgentGame.setStatus(game.getStatus());
                 newAgentGame.setCreatedAt(LocalDateTime.now());
 
                 if(memberCreationPermissionUserType.contains(request.getUserType())) {
@@ -279,7 +279,7 @@ public class AgentGameServiceImpl implements AgentGameService {
 
         agentGame.setRate(product.getRate());
         agentGame.setRateLimit(product.getRateLimit());
-        agentGame.setStatus(product.getNewGameStatus());
+        agentGame.setStatus(product.getStatus());
         agentGame.setUpdatedAt(LocalDateTime.now());
         updatedGames.add(agentGame);
         List<User> downlines = userAndDownlineHierarchyInfo.getDownlines();
@@ -312,7 +312,7 @@ public class AgentGameServiceImpl implements AgentGameService {
                             .upline(userData.getUpline())
                             .product(Product.builder().productId(updateAgentGameByProductRequest.getProduct().getProductId())
                                     .productName(updateAgentGameByProductRequest.getProduct().getProductName())
-                                    .newGameStatus(updateAgentGameByProductRequest.getProduct().getNewGameStatus()).rate(newRate).rateLimit(agentGame1.getRateLimit()).build())
+                                    .status(updateAgentGameByProductRequest.getProduct().getStatus()).rate(newRate).rateLimit(agentGame1.getRateLimit()).build())
                             .build();
 
                     updatePercentageAndStatus(updateAgentGameByProductRequest1, UserAndDownlineHierarchyInfo.builder().user(userData).build(), updatedGames);
