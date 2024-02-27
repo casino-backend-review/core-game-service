@@ -33,7 +33,7 @@ public class GameProvider {
 
     private String provider;
 
-    private double rate;
+    private Double rate;
 
     //@Column(name = "company_fix", nullable = false, length = 100)
     private String companyFix;
