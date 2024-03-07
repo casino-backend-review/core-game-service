@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
@@ -233,16 +234,30 @@ public class AgentGameServiceImpl implements AgentGameService {
 
             for (UpdateAgentGameByProductRequest updateAgentGameByProductRequest : request) {
 
+                if(ObjectUtils.isEmpty(updateAgentGameByProductRequest.getUsername())){
+
+                    throw new ApiException("Username cannot be null or blank",1,HttpStatus.BAD_REQUEST);
+
+                }
+                if(ObjectUtils.isEmpty(updateAgentGameByProductRequest.getUserType())){
+                    throw new ApiException("UserType cannot be null or blank",1,HttpStatus.BAD_REQUEST);
+
+                }
+                if(ObjectUtils.isEmpty(updateAgentGameByProductRequest.getUpline())){
+                    throw new ApiException("Upline cannot be null or blank",1,HttpStatus.BAD_REQUEST);
+
+                }
+
                 if (updateAgentGameByProductRequest.getIsDownlineImpact()) {
                     Product product = updateAgentGameByProductRequest.getProduct();
                     if(product.getProductId()==null||product.getProductName()==null||product.getStatus()==null){
                         throw new ApiException("Product id or product name or game status should not be null",1,HttpStatus.FORBIDDEN);
                     }
 
-                    if(product.getRate()>=0 ||product.getRate()<=100){
+                    if(!(product.getRate()>=0) || !(product.getRate()<=100)){
                         throw new ApiException("Pass valid rate value",1,HttpStatus.FORBIDDEN);
                     }
-                    if(product.getRateLimit()>=0 ||product.getRateLimit()<=100){
+                    if(!(product.getRateLimit()>=0) || !(product.getRateLimit()<=100)){
                         throw new ApiException("Pass valid rate limit value",1,HttpStatus.FORBIDDEN);
                     }
 

@@ -5,6 +5,7 @@ import com.core.gameservice.exception.ApiException;
 import com.core.gameservice.exception.ApiResponseMessage;
 import com.core.gameservice.exception.Error;
 import com.core.gameservice.services.AgentGameService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -66,7 +67,7 @@ public class AgentGameController {
         }
     }
     @PutMapping("/update-product-game-member-status/by-username-usertype")
-    public ResponseEntity<ApiResponseMessage<List<AgentGameResponse>>> updateAgentGameMemberStatus(@RequestBody UpdateAgentGameMemberStatusRequest request,BindingResult bindingResult) {
+    public ResponseEntity<ApiResponseMessage<List<AgentGameResponse>>> updateAgentGameMemberStatus(@Valid @RequestBody UpdateAgentGameMemberStatusRequest request,BindingResult bindingResult) {
         try {
             List<AgentGameResponse> response = agentGameService.updateAgentGameMemberStatus(request,bindingResult);
             return ResponseEntity.ok(ApiResponseMessage.<List<AgentGameResponse>>builder().data(response).build());
@@ -76,7 +77,7 @@ public class AgentGameController {
     }
 
     @PutMapping("/update-list-users-game-status-rate-limit/by-product")
-    public ResponseEntity<ApiResponseMessage<HashMap<String, List<AgentGameResponse>>>> updateAgentGameListByProduct(@RequestBody List<UpdateAgentGameByProductRequest> request, @RequestHeader("Authorization") String authorizationHeader,BindingResult bindingResult) {
+    public ResponseEntity<ApiResponseMessage<HashMap<String, List<AgentGameResponse>>>> updateAgentGameListByProduct(@Valid @RequestBody List<UpdateAgentGameByProductRequest> request,  BindingResult bindingResult,@RequestHeader("Authorization") String authorizationHeader) {
         try {
             String token = authorizationHeader.replace("Bearer ", "");
             HashMap<String, List<AgentGameResponse>> response = agentGameService.updateAgentGameList(request, token,bindingResult);
