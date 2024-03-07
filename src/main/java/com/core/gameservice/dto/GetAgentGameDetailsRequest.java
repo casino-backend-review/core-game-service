@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class GetAgentGameDetailsRequest {
 
-    private String agentId; // Assuming an agent ID is needed to identify the game details
-    private String gameId; // Assuming a game ID is also required
+    private String username; // Assuming an agent ID is needed to identify the game details
+    private String productId; // Assuming a game ID is also required
 }

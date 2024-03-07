@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -18,7 +19,6 @@ import java.time.LocalDateTime;
 public class User {
 
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     private String username;
     private String accountUsername;// in case of subaccount user
@@ -45,36 +45,7 @@ public class User {
     private String note;
     private UserStatus userStatus;
     private Boolean isSubAccountUser; // in case of subaccount user
-    private String subAccountUserPermissionAccess; // in case of subaccount user
+    private List<SubAccountUserLevelAccess> subAccountUserPermissionAccess;// in case of subaccount user
 
-    public User(User user) {
-        this.id = user.getId();
-        this.username = user.getUsername();
-        this.accountUsername = user.getAccountUsername();
-        this.token = user.getToken();
-        this.mobile = user.getMobile();
-        this.uCompany = user.getUCompany();
-        this.uShareHolder = user.getUShareHolder();
-        this.uSuperSenior = user.getUSuperSenior();
-        this.uMaster = user.getUMaster();
-        this.uSenior = user.getUSenior();
-        this.uAgent = user.getUAgent();
-        this.currency = user.getCurrency();
-        this.type = user.getType();
-        this.upline = user.getUpline();
-        this.uplineType = user.getUplineType();
-        this.parentId = user.getParentId();
-        this.parentTopUsername = user.getParentTopUsername();
-        this.refSale = user.getRefSale();
-        this.password = user.getPassword();
-        this.latestIp = user.getLatestIp();
-        this.latestLoggedIn = user.getLatestLoggedIn();
-        this.createdAt = user.getCreatedAt();
-        this.updatedAt = user.getUpdatedAt();
-        this.note = user.getNote();
-        this.userStatus = user.getUserStatus();
-        this.isSubAccountUser = user.getIsSubAccountUser();
-        this.subAccountUserPermissionAccess = user.getSubAccountUserPermissionAccess();
-    }
 }
 

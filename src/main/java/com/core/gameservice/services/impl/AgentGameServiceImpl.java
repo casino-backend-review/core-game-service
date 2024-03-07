@@ -13,9 +13,13 @@ import com.core.gameservice.repositories.GameProviderRepository;
 import com.core.gameservice.services.AgentGameService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -153,8 +157,14 @@ public class AgentGameServiceImpl implements AgentGameService {
 
     @Override
     public AgentGameResponse getAgentGameDetails(GetAgentGameDetailsRequest request) throws ApiException {
+        Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(request.getProductId());
+        if (gameDetailOptional.isEmpty()) {
+
+                throw new ApiException("Product not found for product ID: " + request.getProductId(),1,HttpStatus.FORBIDDEN);
+
+        }
         List<AgentGame> agentGames = agentGameRepository
-                .findAllByUsernameAndStatusAndProductId(request.getAgentId(), Status.A, request.getGameId());
+                .findAllByUsernameAndStatusAndProductId(request.getUsername(), Status.A, request.getProductId());
 
         if (agentGames.isEmpty()) {
             throw new ApiException("No agent games found for the given criteria",1,HttpStatus.FORBIDDEN);
@@ -162,14 +172,6 @@ public class AgentGameServiceImpl implements AgentGameService {
 
         return agentGames.stream()
                 .map(agentGame -> {
-                    Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(agentGame.getProductId());
-                    if (gameDetailOptional.isEmpty()) {
-                        try {
-                            throw new ApiException("Game details not found for product ID: " + agentGame.getProductId(),1,HttpStatus.FORBIDDEN);
-                        } catch (ApiException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
                     return convertToAgentGameResponse(agentGame);
                 })
                 .findFirst()
@@ -188,6 +190,7 @@ public class AgentGameServiceImpl implements AgentGameService {
 
     @Override
     public List<AgentGameResponse> getAgentGame(String username) throws ApiException {
+
         List<AgentGame> agentGames = agentGameRepository.findByUsername(username);
         if (agentGames.isEmpty()) {
             throw new ApiException("Agent games not found",1,HttpStatus.FORBIDDEN);
@@ -208,8 +211,13 @@ public class AgentGameServiceImpl implements AgentGameService {
     }
 
     @Override
-    public List<AgentGameResponse> getAgentGameByUpline(String uplineUsername,String productId) throws ApiException {
-        List<AgentGame> agentGames = agentGameRepository.findByUplineAndProductId(uplineUsername,productId);
+    public List<AgentGameResponse> getAgentGameByUpline(String uplineUsername, String productId, Pageable pageable) throws ApiException {
+        Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(productId);
+        if (gameDetailOptional.isEmpty()) {
+                throw new ApiException("Product not found for product ID: " + productId,1,HttpStatus.FORBIDDEN);
+
+        }
+        Page<AgentGame> agentGames = agentGameRepository.findByUplineAndProductId(uplineUsername,productId, pageable);
         if (agentGames.isEmpty()) {
             throw new ApiException("Agent games not found",1,HttpStatus.FORBIDDEN);
         }
@@ -218,7 +226,8 @@ public class AgentGameServiceImpl implements AgentGameService {
                 .collect(Collectors.toList());    }
 
     @Override
-    public HashMap<String, List<AgentGameResponse>> updateAgentGameList(List<UpdateAgentGameByProductRequest> request, String token) throws ApiException {
+    public HashMap<String, List<AgentGameResponse>> updateAgentGameList(List<UpdateAgentGameByProductRequest> request, String token, BindingResult bindingResult) throws ApiException {
+       validateMandatoryFields(bindingResult);
         HashMap<String, List<AgentGameResponse>> result = new HashMap<>();
         if(!CollectionUtils.isEmpty(request)){
 
@@ -226,9 +235,17 @@ public class AgentGameServiceImpl implements AgentGameService {
 
                 if (updateAgentGameByProductRequest.getIsDownlineImpact()) {
                     Product product = updateAgentGameByProductRequest.getProduct();
-                    if(product==null){
-                        throw new ApiException("Product should not be null",1,HttpStatus.FORBIDDEN);
+                    if(product.getProductId()==null||product.getProductName()==null||product.getStatus()==null){
+                        throw new ApiException("Product id or product name or game status should not be null",1,HttpStatus.FORBIDDEN);
                     }
+
+                    if(product.getRate()>=0 ||product.getRate()<=100){
+                        throw new ApiException("Pass valid rate value",1,HttpStatus.FORBIDDEN);
+                    }
+                    if(product.getRateLimit()>=0 ||product.getRateLimit()<=100){
+                        throw new ApiException("Pass valid rate limit value",1,HttpStatus.FORBIDDEN);
+                    }
+
                     Optional<GameProvider> gameDetailOptional = gameProviderRepository.findByProductId(updateAgentGameByProductRequest.getProduct().getProductId());
                     if (gameDetailOptional.isEmpty()) {
                         throw new ApiException("Product not found",1,HttpStatus.FORBIDDEN);
@@ -248,8 +265,8 @@ public class AgentGameServiceImpl implements AgentGameService {
 
                     UserAndDownlineHierarchyInfo userAndDownlineHierarchyInfo = downline.getData();
 
-
-
+                    List<User> userList = userAndDownlineHierarchyInfo.getDownlines().stream().filter(user -> !user.getIsSubAccountUser()).toList();
+                    userAndDownlineHierarchyInfo.setDownlines(userList);
                     List<AgentGame> updatedGames = new ArrayList<>();
                     updatePercentageAndStatus(updateAgentGameByProductRequest, userAndDownlineHierarchyInfo, updatedGames);                            // You can perform further operations with 'info' here
 
@@ -324,10 +341,24 @@ public class AgentGameServiceImpl implements AgentGameService {
 
 
     }
+    private static void validateMandatoryFields(BindingResult bindingResult) throws ApiException {
+        if (bindingResult.hasErrors()) {
+            StringBuilder errorMessage = new StringBuilder("Validation failed for the following fields: ");
 
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                String field = error.getField();
+                String message = error.getDefaultMessage();
+                errorMessage.append(field).append(": ").append(message).append(",  ");
+            }
+
+            errorMessage.delete(errorMessage.length() - 2, errorMessage.length()); // Remove the trailing comma and space
+
+            throw new ApiException(errorMessage.toString(), 1, HttpStatus.BAD_REQUEST);
+        }
+    }
     @Override
-    public List<AgentGameResponse> updateAgentGameMemberStatus(UpdateAgentGameMemberStatusRequest request) throws ApiException {
-
+    public List<AgentGameResponse> updateAgentGameMemberStatus(UpdateAgentGameMemberStatusRequest request, BindingResult bindingResult) throws ApiException {
+        validateMandatoryFields(bindingResult);
         if(CollectionUtils.isEmpty(request.getProductMemberGameStatusMap())){
             throw new ApiException(" Product id member status map is empty or null",1,HttpStatus.FORBIDDEN);
         }

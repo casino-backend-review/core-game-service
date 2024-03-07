@@ -12,5 +12,4 @@ public enum UserType {
     master,
     agent,
     member
-
 }
