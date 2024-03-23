@@ -3,6 +3,7 @@ package com.core.gameservice.entity;
 import com.core.gameservice.dto.BetLimit;
 import com.core.gameservice.enums.Group;
 import com.core.gameservice.enums.Status;
+import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,50 +14,40 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(collection = "game_providers")
-public class GameProvider {
+@Document(collection = "member-bet-limit")
+public class MemberBetLimit {
 
     @Id
-    private Long id;
+    private String id;
 
-    private String callbackUrl;
+    private String username;
+
+    private String upline;
+
+    private UserType userType;
 
     private String productId;
-
-
     private String productName;
 
 
-    private String category;
-
     private String provider;
-
-    private Double rate;
-
-    //@Column(name = "company_fix", nullable = false, length = 100)
-    private String companyFix;
-
-    private Status status;
-
-    private String readme;
-
-    private String note;
-    private Map<Group, BetLimit> betLimitConfiguration; //other than member and admin
+    private Group group;
+    private BetLimit betLimit; //only member
     private Double commission;
     private Double commissionRate;
 
-    private LocalDateTime updatedAt;
+    private String category;
 
     private LocalDateTime createdAt;
 
-    private LocalDateTime deletedAt;
+    private LocalDateTime updatedAt;
 
-    private boolean isAllowConfig;
-    private Double rateLimit;
-    private String providerType;
+
+    private Status status;
+
+    private String note;
 }

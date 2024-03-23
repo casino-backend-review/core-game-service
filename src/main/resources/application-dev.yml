@@ -1,0 +1,37 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /game-service
+
+spring:
+  data:
+    mongodb:
+      # host: cluster0.fzri6qs         # MongoDB server hostname or IP address
+      port: 27017               # MongoDB server port
+      database: testing           # Database name
+      authentication-database: admin   # Authentication database (optional)
+      uri: mongodb+srv://root:root@cluster0.fzri6qs.mongodb.net/testing
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        default_schema: public
+
+services:
+  walletService:
+    url: http://34.41.109.236:8086/wallet-service
+  memberService:
+    url: http://35.202.45.115:8080/member-service
+
+partner:
+  pg:
+    productId: PGSOFT
+    provider:
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

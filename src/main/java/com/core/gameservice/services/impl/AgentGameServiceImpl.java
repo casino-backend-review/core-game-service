@@ -4,12 +4,15 @@ import com.core.gameservice.client.MemberClient;
 import com.core.gameservice.dto.*;
 import com.core.gameservice.entity.AgentGame;
 import com.core.gameservice.entity.GameProvider;
+import com.core.gameservice.entity.MemberBetLimit;
+import com.core.gameservice.enums.Group;
 import com.core.gameservice.enums.Status;
 import com.core.gameservice.enums.UserType;
 import com.core.gameservice.exception.ApiException;
 import com.core.gameservice.exception.ApiResponseMessage;
 import com.core.gameservice.repositories.AgentGameRepository;
 import com.core.gameservice.repositories.GameProviderRepository;
+import com.core.gameservice.repositories.MemberBetLimitRepository;
 import com.core.gameservice.services.AgentGameService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +37,15 @@ public class AgentGameServiceImpl implements AgentGameService {
     private final GameProviderRepository gameProviderRepository;
     private static final List<UserType> memberCreationPermissionUserType = Collections.unmodifiableList(List.of(UserType.agent, UserType.master, UserType.senior, UserType.super_senior));
     private final MemberClient memberClient;
+    private final MemberBetLimitRepository memberBetLimitRepository;
 
     @Autowired
     public AgentGameServiceImpl(AgentGameRepository agentGameRepository,
-                                GameProviderRepository gameProviderRepository, MemberClient memberClient) {
+                                GameProviderRepository gameProviderRepository, MemberClient memberClient, MemberBetLimitRepository memberBetLimitRepository) {
         this.agentGameRepository = agentGameRepository;
         this.gameProviderRepository = gameProviderRepository;
         this.memberClient = memberClient;
+        this.memberBetLimitRepository = memberBetLimitRepository;
     }
 
     @Override
@@ -68,6 +73,9 @@ public class AgentGameServiceImpl implements AgentGameService {
                 newAgentGame.setProductId(game.getProductId());
                 newAgentGame.setRate(game.getRate());
                 newAgentGame.setRateLimit(game.getRateLimit());
+                newAgentGame.setBetLimitConfiguration(game.getBetLimitConfiguration());
+                newAgentGame.setCommission(game.getCommission());
+                newAgentGame.setCommissionRate(game.getCommissionRate());
                 newAgentGame.setProvider(gameDetail.getProvider());
                 newAgentGame.setProductName(gameDetail.getProductName());
                 newAgentGame.setCategory(gameDetail.getCategory());
@@ -185,7 +193,11 @@ public class AgentGameServiceImpl implements AgentGameService {
                 userType(agentGame.getUserType()).upline(agentGame.getUpline())
                 .productName(agentGame.getProductName()).category(agentGame.getCategory())
                 .productId(agentGame.getProductId()).provider(agentGame.getProvider()).rate(agentGame.getRate()).
-                rateLimit(agentGame.getRateLimit()).note(agentGame.getNote()).status(agentGame.getStatus()).memberStatus(agentGame.getMemberStatus()).build();
+                rateLimit(agentGame.getRateLimit())
+                .betLimitConfiguration(agentGame.getBetLimitConfiguration())
+                .commission(agentGame.getCommission())
+                .commissionRate(agentGame.getCommissionRate())
+                .note(agentGame.getNote()).status(agentGame.getStatus()).memberStatus(agentGame.getMemberStatus()).build();
     }
 
 
@@ -313,20 +325,41 @@ public class AgentGameServiceImpl implements AgentGameService {
         agentGame.setRateLimit(product.getRateLimit());
         agentGame.setStatus(product.getStatus());
         agentGame.setUpdatedAt(LocalDateTime.now());
+        Map<Group, BetLimit> updatedBetLimitConfiguration = getUpdatedBetLimitConfiguration(agentGame.getBetLimitConfiguration(), product.getBetLimitConfiguration());
+        if(!CollectionUtils.isEmpty(updatedBetLimitConfiguration)){
+            agentGame.setBetLimitConfiguration(updatedBetLimitConfiguration);
+        }
         updatedGames.add(agentGame);
+
+        if(updateAgentGameByProductRequest.getProduct()!=null) {
+
+            if (updateAgentGameByProductRequest.getProduct().getBetLimitConfiguration() != null) {
+                agentGame.setBetLimitConfiguration(updateAgentGameByProductRequest.getProduct().getBetLimitConfiguration());
+            }
+            if (updateAgentGameByProductRequest.getProduct().getCommission() != null) {
+
+                agentGame.setCommission(updateAgentGameByProductRequest.getProduct().getCommission());
+            }
+                if (updateAgentGameByProductRequest.getProduct().getCommissionRate() != null) {
+
+                    agentGame.setCommissionRate(updateAgentGameByProductRequest.getProduct().getCommissionRate());
+                }
+
+        }
+
         List<User> downlines = userAndDownlineHierarchyInfo.getDownlines();
         if(!CollectionUtils.isEmpty(downlines)) {
             for (User userData : downlines) {
                 if (!userData.getType().equals(UserType.member) && !userData.getType().equals(UserType.admin)) {
 
-                    AgentGame agentGame1 = agentGameRepository.findByUsernameAndProductId(userData.getUsername(), product.getProductId()).orElseThrow(() -> new ApiException(String.format("Agent game username %s with the product id %s not found", user.getUsername(), product.getProductId()), 1, HttpStatus.FORBIDDEN));
+                    AgentGame agentGameData = agentGameRepository.findByUsernameAndProductId(userData.getUsername(), product.getProductId()).orElseThrow(() -> new ApiException(String.format("Agent game username %s with the product id %s not found", user.getUsername(), product.getProductId()), 1, HttpStatus.FORBIDDEN));
 
-                    if (product.getRateLimit() < agentGame1.getRateLimit()) {
-                        throw new ApiException(String.format("%s it is prohibited to have fewer downlines than the existing once for downline at present", agentGame1.getProductId()), 1, HttpStatus.FORBIDDEN);
+                    if (product.getRateLimit() < agentGameData.getRateLimit()) {
+                        throw new ApiException(String.format("%s it is prohibited to have fewer downlines than the existing once for downline at present", agentGameData.getProductId()), 1, HttpStatus.FORBIDDEN);
                     }
                     Double newRateLimit = product.getRateLimit();
-                    double oldRate = agentGame1.getRate();
-                    Double oldRateLimit = agentGame1.getRateLimit();
+                    double oldRate = agentGameData.getRate();
+                    Double oldRateLimit = agentGameData.getRateLimit();
                     Double newRate;
                     if (newRateLimit > (oldRate + oldRateLimit)) {
                         Double difference = newRateLimit - (oldRate + oldRateLimit);
@@ -337,6 +370,16 @@ public class AgentGameServiceImpl implements AgentGameService {
                     } else {
                         newRate = oldRate;
                     }
+                    Map<Group, BetLimit> updateBetLimitConfiguration = agentGameData.getBetLimitConfiguration();
+                    if(!CollectionUtils.isEmpty(updatedBetLimitConfiguration)&&!CollectionUtils.isEmpty(agentGameData.getBetLimitConfiguration())){
+                      Set<Group> updatedGroups = updatedBetLimitConfiguration.keySet();
+                      Set<Group> existingGroups = agentGameData.getBetLimitConfiguration().keySet();
+                      if(updatedGroups.containsAll(existingGroups)){
+                          updateBetLimitConfiguration= agentGameData.getBetLimitConfiguration();
+                      }else{
+                          updateBetLimitConfiguration=updatedBetLimitConfiguration;
+                      }
+                  }
 
                     UpdateAgentGameByProductRequest updateAgentGameByProductRequest1 = UpdateAgentGameByProductRequest.builder().
                             username(userData.getUsername())
@@ -344,10 +387,31 @@ public class AgentGameServiceImpl implements AgentGameService {
                             .upline(userData.getUpline())
                             .product(Product.builder().productId(updateAgentGameByProductRequest.getProduct().getProductId())
                                     .productName(updateAgentGameByProductRequest.getProduct().getProductName())
-                                    .status(updateAgentGameByProductRequest.getProduct().getStatus()).rate(newRate).rateLimit(agentGame1.getRateLimit()).build())
+                                    .status(updateAgentGameByProductRequest.getProduct().getStatus()).rate(newRate).rateLimit(agentGameData.getRateLimit())
+                                    .betLimitConfiguration(updateBetLimitConfiguration)
+                                    .commission(agentGameData.getCommission())
+                                    .commissionRate(agentGameData.getCommissionRate())
+                                    .build())
                             .build();
 
                     updatePercentageAndStatus(updateAgentGameByProductRequest1, UserAndDownlineHierarchyInfo.builder().user(userData).build(), updatedGames);
+                }
+                if(userData.getType().equals(UserType.member)){
+                    List<MemberBetLimit> byUsernameAndStatus = memberBetLimitRepository.findByUsernameAndStatus(userData.getUsername(), Status.A);
+                    if(!CollectionUtils.isEmpty(byUsernameAndStatus)){
+                        Optional<MemberBetLimit> betLimit = byUsernameAndStatus.stream().filter(memberBetLimit -> memberBetLimit.getProductId().equals(product.getProductId())).findFirst();
+                        if(betLimit.isPresent()){
+                            MemberBetLimit memberBetLimit = betLimit.get();
+                            if(!CollectionUtils.isEmpty(updatedBetLimitConfiguration)&&!updatedBetLimitConfiguration.containsKey(memberBetLimit.getGroup())){
+                                memberBetLimit.setGroup(null);
+                                memberBetLimit.setBetLimit(null);
+                                memberBetLimit.setUpdatedAt(LocalDateTime.now());
+                                memberBetLimitRepository.save(memberBetLimit);
+                            }
+
+                        }
+                    }
+
                 }
 
             }
@@ -356,6 +420,22 @@ public class AgentGameServiceImpl implements AgentGameService {
 
 
     }
+
+    private   Map<Group, BetLimit>  getUpdatedBetLimitConfiguration(Map<Group, BetLimit> existingBetLimitConfiguration, Map<Group, BetLimit>  newBetLimitConfiguration) {
+        if(!CollectionUtils.isEmpty(existingBetLimitConfiguration)&&!CollectionUtils.isEmpty(newBetLimitConfiguration))
+        {
+
+
+            Set<Group> groupsToKeep = newBetLimitConfiguration.keySet();
+            // Remove keys not in keysToKeep using Stream API
+            return existingBetLimitConfiguration.entrySet().stream()
+                    .filter(entry -> groupsToKeep.contains(entry.getKey()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        }
+        return null;
+    }
+
     private static void validateMandatoryFields(BindingResult bindingResult) throws ApiException {
         if (bindingResult.hasErrors()) {
             StringBuilder errorMessage = new StringBuilder("Validation failed for the following fields: ");

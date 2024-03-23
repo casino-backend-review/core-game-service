@@ -1,5 +1,7 @@
 package com.core.gameservice.entity;
 
+import com.core.gameservice.dto.BetLimit;
+import com.core.gameservice.enums.Group;
 import com.core.gameservice.enums.Status;
 import com.core.gameservice.enums.UserType;
 import lombok.AllArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -33,6 +36,9 @@ public class AgentGame {
     private String productId;
 
     private String provider;
+    private Map<Group, BetLimit> betLimitConfiguration; //other than member and admin
+    private Double commission;
+    private Double commissionRate;
     private String productName;
 
     private String category;
